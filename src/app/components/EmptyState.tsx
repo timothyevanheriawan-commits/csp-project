@@ -1,21 +1,34 @@
 import Link from 'next/link';
+import React from 'react';
 
-export default function EmptyState({ icon: Icon, title, description, buttonText, buttonHref }) {
+interface EmptyStateProps {
+  icon: React.ElementType;
+  title: string;
+  description: string;
+  buttonText: string;
+  buttonHref: string;
+}
+
+const EmptyState: React.FC<EmptyStateProps> = ({ icon: Icon, title, description, buttonText, buttonHref }) => {
   return (
     <div className="text-center bg-white p-12 rounded-lg shadow-sm border border-gray-200">
       <div className="flex justify-center items-center mx-auto w-16 h-16 bg-green-100 rounded-full mb-4">
-        <Icon className="w-8 h-8 text-primary-500" />
+        <Icon className="w-8 h-8 text-green-600" />
       </div>
-      <h3 className="text-xl font-semibold text-text mb-2">{title}</h3>
-      <p className="text-text-light mb-6">{description}</p>
-      {buttonText && buttonHref && (
-        <Link
-          href={buttonHref}
-          className="bg-primary-500 hover:bg-primary-600 text-white font-medium py-2 px-6 rounded-lg transition-colors inline-block"
-        >
-          {buttonText}
-        </Link>
-      )}
+      <h3 className="text-2xl font-semibold text-gray-800 mb-2">
+        {title}
+      </h3>
+      <p className="text-gray-500 mb-6 max-w-sm mx-auto">
+        {description}
+      </p>
+      <Link
+        href={buttonHref}
+        className="inline-block bg-green-600 text-white font-semibold px-6 py-3 rounded-lg hover:bg-green-700 transition-colors"
+      >
+        {buttonText}
+      </Link>
     </div>
   );
-}
+};
+
+export default EmptyState;
