@@ -1,0 +1,96 @@
+import { NextResponse } from "next/server";
+import { getServerSession } from "next-auth/next";
+import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { supabaseAdmin } from "@/lib/supabaseAdmin";
+
+async function getUserIdFromSession(session) {
+  if (!session?.user?.email) return null;
+  const { data: user } = await supabaseAdmin
+    .from("User")
+    .select("id")
+    .eq("email", session.user.email)
+    .single();
+  return user?.id;
+}
+
+function getRecipeIdFromUrl(url) {
+  const parts = url.split("/");
+  return parts[parts.length - 2];
+}
+
+export async function POST(request) {
+  const session = await getServerSession(authOptions);
+  if (!session) {
+    return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+  }
+
+  const userId = await getUserIdFromSession(session);
+  const recipeId = getRecipeIdFromUrl(request.nextUrl.pathname);
+
+  if (!userId || !recipeId) {
+    return NextResponse.json(
+      { message: "User or Recipe ID is missing" },
+      { status: 400 }
+    );
+  }
+
+  try {
+    const { error } = await supabaseAdmin
+      .from("SavedRecipe")
+      .insert([{ userId, recipeId }]);
+
+    if (error) {
+      if (error.code === "23505") {
+        return NextResponse.json(
+          { message: "Resep ini sudah ada di daftar simpanan Anda." },
+          { status: 409 }
+        );
+      }
+      throw error;
+    }
+    return NextResponse.json(
+      { message: "Resep berhasil disimpan" },
+      { status: 201 }
+    );
+  } catch (error) {
+    console.error("SAVE_RECIPE_ERROR:", error);
+    return NextResponse.json(
+      { message: "Internal Server Error" },
+      { status: 500 }
+    );
+  }
+}
+
+export async function DELETE(request) {
+  const session = await getServerSession(authOptions);
+  if (!session) {
+    return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+  }
+
+  const userId = await getUserIdFromSession(session);
+  const recipeId = getRecipeIdFromUrl(request.nextUrl.pathname);
+
+  if (!userId || !recipeId) {
+    return NextResponse.json(
+      { message: "User or Recipe ID is missing" },
+      { status: 400 }
+    );
+  }
+
+  try {
+    const { error } = await supabaseAdmin
+      .from("SavedRecipe")
+      .delete()
+      .match({ userId, recipeId });
+
+    if (error) throw error;
+
+    return NextResponse.json({ message: "Simpanan resep berhasil dihapus" });
+  } catch (error) {
+    console.error("UNSAVE_RECIPE_ERROR:", error);
+    return NextResponse.json(
+      { message: "Internal Server Error" },
+      { status: 500 }
+    );
+  }
+}
