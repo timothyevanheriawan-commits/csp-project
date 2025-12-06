@@ -5,7 +5,7 @@ import Image from "next/image";
 import { User, ChefHat } from "lucide-react";
 import { SaveButton } from "./SaveButton";
 import { DeleteButton } from './DeleteButton';
-import { Recipe } from "@/types/recipe";
+import { Recipe } from "@/app/types/Recipe";
 import React from 'react';
 
 function getDifficultyBadgeClass(difficulty: string | null | undefined): string {
@@ -49,7 +49,7 @@ export default function RecipeCard({ recipe, onDeleteSuccess, isInitiallySaved, 
             )}
           </div>
 
-          <div className="w-32 h-32 rounded-lg bg-gray-200 flex-shrink-0 overflow-hidden">
+          <div className="w-32 h-32 rounded-lg bg-gray-200 shrink-0 overflow-hidden">
             {recipe.imageUrl ? (
               <Image
                 src={recipe.imageUrl}
@@ -65,7 +65,7 @@ export default function RecipeCard({ recipe, onDeleteSuccess, isInitiallySaved, 
             )}
           </div>
 
-          <div className="flex-grow pr-8">
+          <div className="grow pr-8">
             <h3 className="text-xl font-semibold text-gray-800 mb-1 group-hover:text-primary-500 transition-colors line-clamp-2">
               {recipe.title}
             </h3>
@@ -134,14 +134,14 @@ export default function RecipeCard({ recipe, onDeleteSuccess, isInitiallySaved, 
         </div>
       </Link>
 
-      <div className="p-5 flex-grow flex flex-col">
+      <div className="p-5 grow flex flex-col">
         <Link href={`/resep/${recipe.id}`} className="block">
           <h3 className="text-xl font-semibold text-gray-900 mb-2 line-clamp-2 hover:text-green-600 transition-colors">
             {recipe.title}
           </h3>
         </Link>
 
-        <p className="text-gray-600 text-sm mb-4 line-clamp-3 flex-grow">
+        <p className="text-gray-600 text-sm mb-4 line-clamp-3 grow">
           {recipe.description || "Resep lezat yang wajib dicoba!"}
         </p>
 

@@ -31,8 +31,13 @@ export const DeleteButton: React.FC<DeleteButtonProps> = ({ recipeId, onSuccess 
             const errorData = await res.json();
             throw new Error(errorData.message || 'Gagal menghapus resep.');
 
-        } catch (error: any) {
-            alert(`Terjadi kesalahan: ${error.message}`);
+        } catch (error: unknown) {
+            let errorMessage = 'Terjadi kesalahan tak terduga.';
+            if (error instanceof Error) {
+                errorMessage = error.message;
+            }
+            alert(`Terjadi kesalahan: ${errorMessage}`);
+
             setIsDeleting(false);
         }
     };

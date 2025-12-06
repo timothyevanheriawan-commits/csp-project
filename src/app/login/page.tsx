@@ -15,14 +15,17 @@ export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
   const router = useRouter();
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
     setIsLoading(true);
     try {
       const result = await signIn("credentials", { redirect: false, email, password });
-      if (result.error) setError("Email atau password salah. Silakan coba lagi.");
-      else router.push("/");
+      if (result?.error) {
+        setError("Email atau password salah. Silakan coba lagi.");
+      } else {
+        router.push("/");
+      }
     } catch (error) {
       setError("Terjadi kesalahan. Silakan coba lagi.");
     } finally {
@@ -100,7 +103,7 @@ export default function Login() {
 
               {error && (
                 <div className="flex items-start gap-3 bg-red-50 border-2 border-red-200 text-red-700 px-4 py-3 rounded-xl animate-fadeIn">
-                  <AlertCircle className="w-5 h-5 mt-0.5 flex-shrink-0" />
+                  <AlertCircle className="w-5 h-5 mt-0.5 shrink-0" />
                   <span className="text-sm font-['Inter']">{error}</span>
                 </div>
               )}

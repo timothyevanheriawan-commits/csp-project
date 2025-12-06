@@ -37,7 +37,7 @@ export default function InstructionsSteps({ instructions }: InstructionsStepsPro
           >
             <button
               onClick={() => toggleStep(index)}
-              className="flex-shrink-0"
+              className="shrink-0"
             >
               <div className={`w-10 h-10 rounded-full flex items-center justify-center font-semibold transition-all ${completedSteps.has(index)
                 ? 'bg-green-500 text-white'
@@ -47,7 +47,7 @@ export default function InstructionsSteps({ instructions }: InstructionsStepsPro
               </div>
             </button>
 
-            <div className="flex-grow">
+            <div className="grow">
               <p className={`leading-relaxed ${completedSteps.has(index)
                 ? 'text-gray-500'
                 : 'text-text-light'
@@ -58,7 +58,7 @@ export default function InstructionsSteps({ instructions }: InstructionsStepsPro
 
             <button
               onClick={() => toggleStep(index)}
-              className="flex-shrink-0 opacity-50 hover:opacity-100 transition-opacity"
+              className="shrink-0 opacity-50 hover:opacity-100 transition-opacity"
             >
               {completedSteps.has(index) ? (
                 <CheckCircle2 className="w-6 h-6 text-green-500" />

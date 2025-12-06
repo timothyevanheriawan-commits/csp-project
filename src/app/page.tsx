@@ -5,10 +5,8 @@ import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 import RecipeCard from "./components/RecipeCard";
 import Stats from "./components/Stats";
-import { ChefHat, Plus, Sparkles } from "lucide-react";
-import { Recipe } from '@/types/recipe';
+import { ChefHat, Plus } from "lucide-react";
 import TestimonialCard from './components/TestimonialCard';
-import { authOptions } from './api/auth/[...nextauth]/route';
 
 
 async function getStats() {
@@ -28,7 +26,7 @@ async function getLatestRecipes(limit = 6) {
 }
 
 export default async function Home() {
-  const session = await getServerSession(authOptions);
+const session = await getServerSession();
 
   const [latestRecipes, stats] = await Promise.all([
     getLatestRecipes(),
@@ -53,8 +51,8 @@ export default async function Home() {
     <div className="min-h-screen flex flex-col bg-background">
       <Navbar />
 
-      <main className="flex-grow">
-        <section className="relative bg-gradient-to-br from-secondary-100 via-background to-accent-50 py-20 overflow-hidden">
+      <main className="grow">
+        <section className="relative bg-linear-to-br from-secondary-100 via-background to-accent-50 py-20 overflow-hidden">
           <div
             className="absolute inset-0 z-0"
             style={{
@@ -66,7 +64,7 @@ export default async function Home() {
           >
             <div className="absolute inset-0 bg-black/60 backdrop-blur-[1px]"></div>
 
-            <div className="absolute inset-0 bg-gradient-to-br from-secondary-900/30 via-black/40 to-accent-900/30"></div>
+            <div className="absolute inset-0 bg-linear-to-br from-secondary-900/30 via-black/40 to-accent-900/30"></div>
           </div>
 
           <div className="absolute top-10 left-10 w-20 h-20 bg-accent-200 rounded-full opacity-30 animate-pulse z-10"></div>
@@ -165,13 +163,13 @@ export default async function Home() {
             ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                   {latestRecipes.map((recipe) => {
-                    // 4. Periksa apakah resep ini ada di dalam daftar simpanan
                     const isSaved = savedRecipeIds.has(recipe.id);
                     return (
                       <RecipeCard
                         key={recipe.id}
                         recipe={recipe}
-                        isInitiallySaved={isSaved} // <-- Kirim statusnya sebagai prop
+                        isInitiallySaved={isSaved}
+                        viewMode="grid"
                       />
                     );
                   })}

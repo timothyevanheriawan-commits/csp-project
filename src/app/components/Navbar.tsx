@@ -62,7 +62,7 @@ export default function Navbar() {
                   onClick={() => setIsProfileOpen(!isProfileOpen)}
                   className="flex items-center space-x-2 p-1 rounded-full hover:bg-gray-100 transition-colors group"
                 >
-                  <div className="w-8 h-8 bg-gradient-to-br from-green-500 to-green-600 rounded-full flex items-center justify-center text-white font-semibold">
+                  <div className="w-8 h-8 bg-linear-to-br from-green-500 to-green-600 rounded-full flex items-center justify-center text-white font-semibold">
                     {userData.image ? (
                       <Image
                         src={userData.image}
@@ -79,7 +79,7 @@ export default function Navbar() {
 
                 {isProfileOpen && (
                   <div className="absolute right-0 mt-2 w-72 bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden animate-fade-in">
-                    <div className="bg-gradient-to-br from-green-500 to-green-600 p-4">
+                      <div className="bg-linear-to-br from-green-500 to-green-600 p-4">
                       <div className="flex items-center space-x-3">
                         <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center text-green-600 font-bold text-lg">
                           {userData.image ? (

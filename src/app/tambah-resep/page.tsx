@@ -8,11 +8,22 @@ import Footer from "../components/Footer";
 import { Plus, X, AlertCircle, Save, ArrowLeft, Utensils, List, FileText, CheckCircle } from "lucide-react";
 import Link from "next/link";
 
+type ArrayField = 'ingredients' | 'instructions';
+interface FormDataState {
+  title: string;
+  description: string;
+  ingredients: string[];
+  instructions: string[];
+  difficulty: 'MUDAH' | 'SEDANG' | 'SULIT';
+  category: 'MAKANAN_UTAMA' | 'KUE_DESSERT' | 'MINUMAN' | 'CAMILAN';
+  imageUrl: string;
+}
+
 export default function TambahResepPage() {
   const { status } = useSession();
   const router = useRouter();
 
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<FormDataState>({
     title: "", description: "", ingredients: [""], instructions: [""], difficulty: "MUDAH", category: "MAKANAN_UTAMA", imageUrl: "",
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -23,11 +34,19 @@ export default function TambahResepPage() {
   useEffect(() => { if (status === "unauthenticated") router.push('/login'); }, [status, router]);
   useEffect(() => { setImagePreview(formData.imageUrl || ""); }, [formData.imageUrl]);
 
-  const handleArrayChange = (field, index, value) => setFormData(p => ({ ...p, [field]: p[field].map((item, i) => i === index ? value : item) }));
-  const handleArrayAdd = (field) => setFormData(p => ({ ...p, [field]: [...p[field], ""] }));
-  const handleArrayRemove = (field, index) => formData[field].length > 1 && setFormData(p => ({ ...p, [field]: p[field].filter((_, i) => i !== index) }));
+  const handleArrayChange = (field: ArrayField, index: number, value: string) => {
+    setFormData(p => ({ ...p, [field]: p[field].map((item, i) => i === index ? value : item) }));
+  };
+  const handleArrayAdd = (field: ArrayField) => {
+    setFormData(p => ({ ...p, [field]: [...p[field], ""] }));
+  };
+  const handleArrayRemove = (field: ArrayField, index: number) => {
+    if (formData[field].length > 1) {
+      setFormData(p => ({ ...p, [field]: p[field].filter((_, i) => i !== index) }));
+    }
+  };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(""); setSuccessMessage(""); setIsSubmitting(true);
 
@@ -43,7 +62,7 @@ export default function TambahResepPage() {
     try {
       const res = await fetch("/api/resep", {
         method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...formData, ingredients: validIngredients, instructions: validInstructions.join("\n") }),
+        body: JSON.stringify({ ...formData, ingredients: validIngredients, instructions: validInstructions }),
       });
 
       if (res.ok) {
@@ -51,21 +70,24 @@ export default function TambahResepPage() {
         setSuccessMessage("Resep berhasil disimpan! Mengalihkan...");
         setTimeout(() => router.push(`/resep/${data.id}`), 2000);
       } else {
-        setError("Gagal menyimpan resep. Silakan coba lagi.");
+        const data = await res.json();
+        setError(data.message || "Gagal menyimpan resep. Silakan coba lagi.");
       }
-    } catch (error) {
+    } catch (err) {
       setError("Terjadi kesalahan. Silakan periksa koneksi internet Anda.");
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  const difficultyLevels = ['MUDAH', 'SEDANG', 'SULIT'];
+  const difficultyLevels: FormDataState['difficulty'][] = ['MUDAH', 'SEDANG', 'SULIT'];
+  const categoryLevels: FormDataState['category'][] = ['MAKANAN_UTAMA', 'KUE_DESSERT', 'MINUMAN', 'CAMILAN'];
+
 
   return (
     <div className="min-h-screen flex flex-col bg-[#F6FFF9]">
       <Navbar />
-      <main className="flex-grow py-8 md:py-12">
+      <main className="grow py-8 md:py-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="mb-8">
             <Link href="/profil" className="inline-flex items-center gap-2 text-gray-600 hover:text-[#2E8B57] transition-colors duration-200 mb-6 group font-['Inter']">
@@ -96,7 +118,7 @@ export default function TambahResepPage() {
                   </div>
                   <div>
                     <label className="block text-sm font-semibold text-[#1F1F1F] mb-2 font-['Inter']">Deskripsi</label>
-                    <textarea rows="4" value={formData.description} onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                    <textarea rows={4} value={formData.description} onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                       className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl" placeholder="Ceritakan keistimewaan resep ini..."
                     />
                   </div>
@@ -111,12 +133,13 @@ export default function TambahResepPage() {
                 <div className="space-y-3">
                   {formData.ingredients.map((ingredient, index) => (
                     <div key={index} className="flex gap-2 items-center group">
-                      <span className="flex-shrink-0 w-8 h-8 bg-[#2E8B57]/10 text-[#2E8B57] rounded-full flex items-center justify-center text-sm font-semibold">{index + 1}</span>
+                      <span className="shrink-0 w-8 h-8 bg-[#2E8B57]/10 text-[#2E8B57] rounded-full flex items-center justify-center text-sm font-semibold">{index + 1}</span>
                       <input type="text" value={ingredient} onChange={(e) => handleArrayChange("ingredients", index, e.target.value)}
                         className="flex-1 px-4 py-3 border-2 border-gray-200 rounded-xl" placeholder={`Bahan ke-${index + 1}`}
                       />
                       {formData.ingredients.length > 1 && (
                         <button type="button" onClick={() => handleArrayRemove("ingredients", index)}
+                          aria-label={`Hapus bahan ke-${index + 1}`}
                           className="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-all duration-200 opacity-0 group-hover:opacity-100">
                           <X className="w-5 h-5" />
                         </button>
@@ -138,13 +161,14 @@ export default function TambahResepPage() {
                 <div className="space-y-4">
                   {formData.instructions.map((instruction, index) => (
                     <div key={index} className="flex gap-3 group">
-                      <span className="flex-shrink-0 w-8 h-8 bg-[#2E8B57]/10 text-[#2E8B57] rounded-full flex items-center justify-center text-sm font-semibold">{index + 1}</span>
+                      <span className="shrink-0 w-8 h-8 bg-[#2E8B57]/10 text-[#2E8B57] rounded-full flex items-center justify-center text-sm font-semibold">{index + 1}</span>
                       <div className="flex-1 flex gap-2">
                         <textarea value={instruction} onChange={(e) => handleArrayChange("instructions", index, e.target.value)}
-                          className="flex-1 px-4 py-3 border-2 border-gray-200 rounded-xl" rows="3" placeholder={`Langkah ${index + 1}`}
+                          className="flex-1 px-4 py-3 border-2 border-gray-200 rounded-xl" rows={3} placeholder={`Langkah ${index + 1}`}
                         />
                         {formData.instructions.length > 1 && (
-                          <button type="button" onClick={() => handleArrayRemove("instructions", index)}
+                          <button type="button" aria-label={`Hapus langkah ke-${index + 1}`} // <-- Tambahkan ini
+                            onClick={() => handleArrayRemove("instructions", index)}
                             className="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-all duration-200 opacity-0 group-hover:opacity-100 self-start">
                             <X className="w-5 h-5" />
                           </button>
@@ -164,8 +188,10 @@ export default function TambahResepPage() {
               <div className="bg-white rounded-2xl shadow-lg p-6 top-24 transform transition-all duration-300 hover:shadow-xl">
                 <div className="space-y-4">
                   <div>
-                    <label className="block text-sm font-semibold text-[#1F1F1F] mb-2 font-['Inter']">Kategori</label>
-                    <select value={formData.category} onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+                    <label htmlFor="category-select" className="block text-sm font-semibold text-[#1F1F1F] mb-2 font-['Inter']">Kategori</label>
+                    <select id="category-select" value={formData.category} onChange={(e) => setFormData({
+                      ...formData, category: e.target.value as FormDataState['category']
+                    })}
                       className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl">
                       <option value="MAKANAN_UTAMA">Makanan Utama</option>
                       <option value="KUE_DESSERT">Kue & Dessert</option>
@@ -212,14 +238,14 @@ export default function TambahResepPage() {
 
           {error && (
             <div className="mt-6 flex items-start gap-3 bg-red-50 border-2 border-red-200 text-red-700 px-4 py-3 rounded-xl animate-fadeIn">
-              <AlertCircle className="w-5 h-5 mt-0.5 flex-shrink-0" />
+              <AlertCircle className="w-5 h-5 mt-0.5 shrink-0" />
               <span className="font-['Inter']">{error}</span>
             </div>
           )}
 
           {successMessage && (
             <div className="mt-6 flex items-start gap-3 bg-green-50 border-2 border-green-200 text-green-700 px-4 py-3 rounded-xl animate-fadeIn">
-              <CheckCircle className="w-5 h-5 mt-0.5 flex-shrink-0" />
+              <CheckCircle className="w-5 h-5 mt-0.5 shrink-0" />
               <span className="font-['Inter']">{successMessage}</span>
             </div>
           )}

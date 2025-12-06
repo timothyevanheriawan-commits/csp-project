@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import {
   FaWhatsapp,
   FaTwitter,
@@ -14,17 +14,11 @@ interface ShareButtonsProps {
 }
 
 const ShareButtons: React.FC<ShareButtonsProps> = ({ title, className = '' }) => {
-  const [pageUrl, setPageUrl] = useState('');
   const [copySuccess, setCopySuccess] = useState('');
 
-  useEffect(() => {
-    setPageUrl(window.location.href);
-  }, []);
-
   const copyToClipboard = () => {
-    if (!pageUrl) return;
-
-    navigator.clipboard.writeText(pageUrl).then(() => {
+    const currentUrl = window.location.href;
+    navigator.clipboard.writeText(currentUrl).then(() => {
       setCopySuccess('Link berhasil disalin!');
       setTimeout(() => setCopySuccess(''), 2000);
     }, () => {
@@ -32,9 +26,11 @@ const ShareButtons: React.FC<ShareButtonsProps> = ({ title, className = '' }) =>
     });
   };
 
-  if (!pageUrl) return null;
 
-  const encodedUrl = encodeURIComponent(pageUrl);
+  const isBrowser = typeof window !== 'undefined';
+  const currentUrl = isBrowser ? window.location.href : '';
+
+  const encodedUrl = encodeURIComponent(currentUrl);
   const encodedTitle = encodeURIComponent(`Coba resep ini: ${title}`);
 
   const shareLinks = [

@@ -72,7 +72,7 @@ export default async function RecipePage({ params }: PageProps) {
   return (
     <div className="min-h-screen flex flex-col bg-background">
       <Navbar />
-      <main className="flex-grow">
+      <main className="grow">
         <section className="relative h-[350px] md:h-[450px] lg:h-[500px] overflow-hidden">
           <div className="absolute inset-0">
             {recipe.imageUrl ? (
@@ -80,14 +80,14 @@ export default async function RecipePage({ params }: PageProps) {
             ) : (
               <div className="w-full h-full" style={{ background: 'linear-gradient(135deg, #2E8B57 0%, #9ED5C5 100%)' }} />
             )}
-            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
+            <div className="absolute inset-0 bg-linear-to-t from-black/80 via-black/40 to-transparent" />
           </div>
 
           <div className="absolute inset-0 flex flex-col justify-end">
             <div className="max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 pb-8 md:pb-12">
               <Link
                 href="/resep"
-                className="inline-flex items-center gap-2 text-white/90 hover:text-white mb-6 transition-all duration-200 hover:translate-x-[-4px] group"
+                className="inline-flex items-center gap-2 text-white/90 hover:text-white mb-6 transition-all duration-200 hover:translate-x-1 group"
               >
                 <ArrowLeft className="w-5 h-5 group-hover:scale-110 transition-transform" />
                 <span className="font-medium">Kembali ke Resep</span>

@@ -1,12 +1,10 @@
-// File: src/app/api/auth/[...nextauth]/route.js
 
 import NextAuth from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
-import { supabase } from "@/lib/supabaseClient"; // Impor client publik
+import { supabase } from "@/lib/supabaseClient";
 import bcrypt from "bcryptjs";
 
 export const authOptions = {
-  // HAPUS 'adapter' jika masih ada
   providers: [
     CredentialsProvider({
       name: "credentials",
@@ -20,31 +18,31 @@ export const authOptions = {
           return null;
         }
 
-        // Cari user menggunakan Supabase client
         const { data: user, error } = await supabase
           .from("User")
           .select("*")
           .eq("email", credentials.email)
-          .single(); // .single() untuk mendapatkan satu objek
+          .single();
 
-        // Jika user tidak ditemukan atau ada error Supabase
         if (error || !user) {
           console.error("Authorize: User not found or Supabase error:", error);
           return null;
         }
 
-        // Bandingkan password
+        if (!user.password) {
+          console.log("Authorize: User does not have a password");
+          return null;
+        }
+
         const isValid = await bcrypt.compare(
           credentials.password,
           user.password
         );
 
         if (isValid) {
-          console.log("Authorize: Login successful for", user.email);
-          return user; // Jika valid, kembalikan data user
+          return user;
         } else {
-          console.log("Authorize: Invalid password for", user.email);
-          return null; // Jika tidak valid, kembalikan null
+          return null;
         }
       },
     }),
@@ -55,6 +53,20 @@ export const authOptions = {
   secret: process.env.NEXTAUTH_SECRET,
   pages: {
     signIn: "/login",
+  },
+  callbacks: {
+    async session({ session, token }) {
+      if (session.user && token.sub) {
+        session.user.id = token.sub;
+      }
+      return session;
+    },
+    async jwt({ token, user }) {
+      if (user) {
+        token.id = user.id;
+      }
+      return token;
+    },
   },
 };
 

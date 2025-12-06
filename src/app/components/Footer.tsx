@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ChefHat, Facebook, Twitter, Instagram, Mail } from "lucide-react";
+import { ChefHat, Facebook, Twitter, Instagram} from "lucide-react";
 
 export default function Footer() {
   return (
@@ -57,20 +57,26 @@ export default function Footer() {
           <div>
             <h3 className="font-semibold text-white mb-4">Ikuti Kami</h3>
             <div className="flex space-x-4">
-              <a href="https://www.facebook.com/" className="hover:text-green-400 transition-colors">
+              <a
+                href="https://www.facebook.com/"
+                className="hover:text-green-400 transition-colors"
+                aria-label="Facebook"
+              >
                 <Facebook className="w-6 h-6" />
               </a>
-              <a href="https://twitter.com" className="hover:text-green-400 transition-colors">
+              <a
+                href="https://twitter.com"
+                className="hover:text-green-400 transition-colors"
+                aria-label="Twitter"
+              >
                 <Twitter className="w-6 h-6" />
               </a>
-              <a href="https://www.instagram.com/" className="hover:text-green-400 transition-colors">
-                <Instagram className="w-6 h-6" />
-              </a>
               <a
-                href="mailto:info@recipeshare.com"
+                href="https://www.instagram.com/"
                 className="hover:text-green-400 transition-colors"
+                aria-label="Instagram"
               >
-                <Mail className="w-6 h-6" />
+                <Instagram className="w-6 h-6" />
               </a>
             </div>
           </div>

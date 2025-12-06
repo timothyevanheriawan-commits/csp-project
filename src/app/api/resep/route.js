@@ -2,7 +2,6 @@ import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabaseClient";
 import { supabaseAdmin } from "@/lib/supabaseAdmin";
 import { getServerSession } from "next-auth/next";
-import { authOptions } from "../auth/[...nextauth]/route";
 
 /**
  * @handler GET
@@ -31,7 +30,7 @@ export async function GET() {
  * @description Membuat resep baru. Menggunakan Admin Client untuk melewati RLS.
  */
 export async function POST(request) {
-  const session = await getServerSession(authOptions);
+  const session = await getServerSession();
 
   if (!session || !session.user || !session.user.email) {
     return NextResponse.json(

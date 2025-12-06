@@ -37,7 +37,7 @@ export default function RegisterPage() {
   ];
   const allPasswordReqsMet = passwordRequirements.every(req => req.met);
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
 
@@ -53,7 +53,6 @@ export default function RegisterPage() {
       setError("Anda harus menyetujui Syarat & Ketentuan.");
       return;
     }
-
     setIsSubmitting(true);
     try {
       const res = await fetch("/api/register", {
@@ -68,8 +67,12 @@ export default function RegisterPage() {
         const data = await res.json();
         setError(data.message || "Pendaftaran gagal. Email mungkin sudah digunakan.");
       }
-    } catch (err) {
-      setError("Terjadi kesalahan. Periksa koneksi internet Anda.");
+    } catch (err: unknown) { // === PERBAIKAN TIPE DI SINI ===
+      if (err instanceof Error) {
+        setError(`Terjadi kesalahan: ${err.message}`);
+      } else {
+        setError("Terjadi kesalahan. Periksa koneksi internet Anda.");
+      }
     } finally {
       setIsSubmitting(false);
     }
@@ -180,7 +183,7 @@ export default function RegisterPage() {
                 <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-1">
                   {passwordRequirements.map((req, index) => (
                     <div key={index} className="flex items-center gap-2 text-xs transition-colors duration-300">
-                      <Check className={`w-3.5 h-3.5 flex-shrink-0 ${req.met ? "text-green-500" : "text-gray-300"}`} />
+                      <Check className={`w-3.5 h-3.5 shrink-0 ${req.met ? "text-green-500" : "text-gray-300"}`} />
                       <span className={req.met ? "text-green-600" : "text-gray-500"}>{req.text}</span>
                     </div>
                   ))}
@@ -215,7 +218,7 @@ export default function RegisterPage() {
                     checked={agreedToTerms}
                     onChange={(e) => setAgreedToTerms(e.target.checked)}
                     className="h-4 w-4 mt-0.5 text-[#2E8B57] rounded border-gray-300
-                                  focus:ring-2 focus:ring-[#2E8B57] cursor-pointer flex-shrink-0" />
+                                  focus:ring-2 focus:ring-[#2E8B57] cursor-pointer shrink-0" />
                   <label htmlFor="terms" className="ml-3 block text-sm text-gray-600 font-['Inter']">
                     Saya setuju dengan{" "}
                     <Link href="/terms" className="font-medium text-[#2E8B57] hover:underline">
@@ -228,7 +231,7 @@ export default function RegisterPage() {
               {error && (
                 <div className="flex items-start gap-3 bg-red-50 border-2 border-red-200 
                               text-red-700 px-4 py-3 rounded-xl animate-fadeIn">
-                  <AlertCircle className="w-5 h-5 mt-0.5 flex-shrink-0" />
+                  <AlertCircle className="w-5 h-5 mt-0.5 shrink-0" />
                   <span className="text-sm font-['Inter']">{error}</span>
                 </div>
               )}

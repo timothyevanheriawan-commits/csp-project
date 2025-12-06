@@ -10,9 +10,22 @@ import Footer from "../components/Footer";
 import RecipeCardSkeleton from "../components/RecipeCardSkeleton";
 import EmptyState from "../components/EmptyState";
 import { User, Mail, BookOpen, Bookmark, PlusCircle } from "lucide-react";
-import { Recipe } from "@/types/recipe";
+import { Recipe } from '@/app/types/Recipe';
+import { Session } from 'next-auth';
 
-const ProfileHeaderCard = ({ session, myRecipesLength, savedRecipesLength }) => {
+type Tab = 'recipes' | 'saved';
+
+interface ProfileHeaderCardProps {
+  session: Session;
+  myRecipesLength: number;
+  savedRecipesLength: number;
+}
+interface RecipeTabsProps {
+  activeTab: Tab;
+  setActiveTab: React.Dispatch<React.SetStateAction<Tab>>;
+}
+
+const ProfileHeaderCard: React.FC<ProfileHeaderCardProps> = ({ session, myRecipesLength, savedRecipesLength }) => {
   const { user } = session;
 
   return (
@@ -48,9 +61,12 @@ const ProfileHeaderCard = ({ session, myRecipesLength, savedRecipesLength }) => 
   );
 };
 
-const RecipeTabs = ({ activeTab, setActiveTab }) => {
-  const tabClass = (t) => `flex items-center gap-2 py-3 px-1 border-b-2 font-semibold transition-colors ${t === activeTab ? "border-[#2E8B57] text-[#2E8B57]" : "border-transparent text-gray-500 hover:text-gray-800"}`;
-  return (
+const RecipeTabs: React.FC<RecipeTabsProps> = ({ activeTab, setActiveTab }) => {
+  const tabClass = (tabName: Tab) =>
+    `flex items-center gap-2 py-3 px-1 border-b-2 font-semibold transition-colors ${activeTab === tabName
+      ? "border-[#2E8B57] text-[#2E8B57]"
+      : "border-transparent text-gray-500 hover:text-gray-800"
+    }`;  return (
     <div className="border-b border-gray-200">
       <div className="flex gap-4 md:gap-8">
         <button onClick={() => setActiveTab("recipes")} className={tabClass("recipes")}>
@@ -122,6 +138,7 @@ export default function ProfilPage() {
             recipe={r}
             onDeleteSuccess={isSavedTab ? undefined : handleDeleteSuccess}
             isInitiallySaved={isSavedTab || savedRecipeIds.has(r.id)}
+            viewMode="grid"
           />
         ))}
       </div>
@@ -139,7 +156,7 @@ export default function ProfilPage() {
   return (
     <div className="min-h-screen flex flex-col bg-[#F6FFF9] font-['Inter']">
       <Navbar />
-      <main className="flex-grow container mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12">
+      <main className="grow container mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12">
         <ProfileHeaderCard session={session} myRecipesLength={myRecipes.length} savedRecipesLength={savedRecipes.length} />
         <div className="flex justify-between items-center mb-8">
           <RecipeTabs activeTab={activeTab} setActiveTab={setActiveTab} />

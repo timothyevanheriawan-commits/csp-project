@@ -1,22 +1,15 @@
 "use client";
 
-import { useState, useEffect, useMemo, FC } from 'react';
+import React, { useState, useEffect, useMemo, FC } from 'react';
 import RecipeCard from '../components/RecipeCard';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
-import { ChefHat, Coffee, Cake, UtensilsCrossed, Cookie, Search, Grid3x3, List, Loader2, LucideIcon } from 'lucide-react';
+import { ChefHat, Coffee, Cake, UtensilsCrossed, Cookie, Search, Grid3x3, List, Loader2 } from 'lucide-react';
 import Link from 'next/link';
 import { SaveButton } from '../components/SaveButton';
-interface Recipe {
-  id: string;
-  title: string;
-  description: string;
-  imageUrl: string;
-  difficulty: string;
-  category: 'MAKANAN_UTAMA' | 'KUE_DESSERT' | 'MINUMAN' | 'CAMILAN';
-  author: { name: string; };
-  createdAt?: string;
-}
+import { Recipe } from '../types/Recipe';
+import Image from 'next/image';
+
 
 const categories = {
   SEMUA: { label: 'Semua Resep', icon: Grid3x3 },
@@ -28,11 +21,11 @@ const categories = {
 
 type CategoryKey = keyof typeof categories;
 
-const difficultyOrder: Record<string, number> = { 'mudah': 0, 'sedang': 1, 'sulit': 2 };
+const difficultyOrder: Record<string, number> = { 'MUDAH': 0, 'SEDANG': 1, 'SULIT': 2 };
 
 const getDifficultyClass = (difficulty: string) => {
-  const d = difficulty.toLowerCase();
-  return d === 'mudah' ? 'bg-green-100 text-green-700' : d === 'sedang' ? 'bg-yellow-100 text-yellow-700' : 'bg-red-100 text-red-700';
+  const d = difficulty.toUpperCase();
+  return d === 'MUDAH' ? 'bg-green-100 text-green-700' : d === 'SEDANG' ? 'bg-yellow-100 text-yellow-700' : 'bg-red-100 text-red-700';
 };
 
 export default function ResepPage() {
@@ -84,8 +77,8 @@ export default function ResepPage() {
           return new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime();
         }
         if (sortBy === 'easiest') {
-          const difficultyA = difficultyOrder[a.difficulty?.toLowerCase()] ?? 99;
-          const difficultyB = difficultyOrder[b.difficulty?.toLowerCase()] ?? 99;
+          const difficultyA = difficultyOrder[a.difficulty] ?? 99;
+          const difficultyB = difficultyOrder[b.difficulty] ?? 99;
           return difficultyA - difficultyB;
         }
         return 0;
@@ -94,8 +87,11 @@ export default function ResepPage() {
 
   const categoryStats = useMemo(() => {
     const stats: Record<CategoryKey, number> = { SEMUA: allRecipes.length, MAKANAN_UTAMA: 0, KUE_DESSERT: 0, MINUMAN: 0, CAMILAN: 0 };
-    allRecipes.forEach(r => r.category in stats && r.category !== 'SEMUA' && stats[r.category as 'MAKANAN_UTAMA' | 'KUE_DESSERT' | 'MINUMAN' | 'CAMILAN']++);
-    return stats;
+    allRecipes.forEach(r => {
+      if (r.category in stats) {
+        stats[r.category as 'MAKANAN_UTAMA' | 'KUE_DESSERT' | 'MINUMAN' | 'CAMILAN']++;
+      }
+    }); return stats;
   }, [allRecipes]);
 
   const SelectedIcon = categories[selectedCategory].icon;
@@ -121,7 +117,7 @@ export default function ResepPage() {
   return (
     <div className="min-h-screen flex flex-col font-inter" style={{ backgroundColor: "#eaf8ee" }}>
       <Navbar />
-      <main className="flex-grow">
+      <main className="grow">
         <section className="relative py-16 overflow-hidden" style={{ backgroundColor: "#eaf8ee" }}>
           <div className="absolute top-5 right-10 w-24 h-24 bg-accent-200 rounded-full opacity-20 animate-pulse"></div>
           <div className="absolute bottom-5 left-10 w-32 h-32 bg-secondary-200 rounded-full opacity-20 animate-pulse delay-1000"></div>
@@ -156,10 +152,12 @@ export default function ResepPage() {
                 <div className="flex bg-gray-100 rounded-lg p-1">
                   <button
                     onClick={() => setViewMode('grid')}
+                    aria-label="Tampilan Grid"
                     className={`p-2 rounded transition-colors ${viewMode === 'grid' ? 'bg-white text-primary-600 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
                   ><Grid3x3 className="w-4 h-4" /></button>
                   <button
                     onClick={() => setViewMode('list')}
+                    aria-label="Tampilan Daftar"
                     className={`p-2 rounded transition-colors ${viewMode === 'list' ? 'bg-white text-primary-600 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
                   ><List className="w-4 h-4" /></button>
                 </div>
@@ -176,7 +174,7 @@ export default function ResepPage() {
                 {searchQuery && (
                   <span className="inline-flex items-center gap-1 px-3 py-1 bg-secondary-100 text-secondary-700 rounded-full text-sm">
                     <Search className="w-3 h-3" />
-                    "{searchQuery}"
+                    &ldquo;{searchQuery}&rdquo;
                     <button
                       onClick={() => setSearchQuery('')}
                       className="ml-1 hover:text-secondary-900"
@@ -227,7 +225,7 @@ export default function ResepPage() {
                               <SaveButton recipeId={recipe.id} isInitiallySaved={isSaved} />
                             </div>
 
-                              <div className="w-32 h-32  bg-gray-200 flex-shrink-0 rounded-lg overflow-hidden">
+                            <div className="w-32 h-32  bg-gray-200 shrink-0 rounded-lg overflow-hidden">
                               {recipe.imageUrl ? (
                                 <img
                                   src={recipe.imageUrl}
@@ -240,7 +238,7 @@ export default function ResepPage() {
                                 </div>
                               )}
                             </div>
-                            <div className="flex-grow pr-8">
+                            <div className="grow pr-8">
                               <h3 className="text-xl text-gray-800 mb-1 group-hover:text-primary-500 transition-colors">{recipe.title}</h3>
                               <p className="text-gray-500 text-sm mb-2 line-clamp-2">{recipe.description || "Resep lezat yang wajib dicoba!"}</p>
                               <div className="flex items-center gap-4 text-sm mt-3">

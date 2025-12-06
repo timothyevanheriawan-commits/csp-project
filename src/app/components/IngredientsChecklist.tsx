@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Download, CheckCircle, Circle } from 'lucide-react';
+import { CheckCircle, Circle } from 'lucide-react';
 
 interface IngredientsChecklistProps {
   ingredients: string[];
@@ -20,17 +20,6 @@ export default function IngredientsChecklist({ ingredients }: IngredientsCheckli
     setCheckedItems(newChecked);
   };
 
-  const downloadShoppingList = () => {
-    const uncheckedItems = ingredients.filter((_, index) => !checkedItems.has(index));
-    const content = `Daftar Belanja:\n\n${uncheckedItems.join('\n')}`;
-    const blob = new Blob([content], { type: 'text/plain' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'daftar-belanja.txt';
-    a.click();
-  };
-
   return (
     <div>
       <div className="space-y-3 mb-6">
@@ -44,9 +33,9 @@ export default function IngredientsChecklist({ ingredients }: IngredientsCheckli
               }`}
           >
             {checkedItems.has(index) ? (
-              <CheckCircle className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" />
+              <CheckCircle className="w-5 h-5 text-green-500 mt-0.5 shrink-0" />
             ) : (
-              <Circle className="w-5 h-5 text-gray-400 mt-0.5 flex-shrink-0" />
+              <Circle className="w-5 h-5 text-gray-400 mt-0.5 shrink-0" />
             )}
             <span className={`${checkedItems.has(index)
               ? 'text-gray-500 line-through'

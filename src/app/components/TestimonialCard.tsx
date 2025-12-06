@@ -11,9 +11,9 @@ interface TestimonialCardProps {
 const TestimonialCard: React.FC<TestimonialCardProps> = ({ quote, name, role, imageUrl }) => {
   return (
     <div className="bg-white p-8 rounded-xl shadow-soft transition-transform hover:scale-105">
-      <p className="text-text-light font-body italic mb-6">"{quote}"</p>
+      <p className="text-text-light font-body italic mb-6">&ldquo;{quote}&rdquo;</p>
       <div className="flex items-center">
-        <div className="flex-shrink-0">
+        <div className="shrink-0">
           <Image
             className="h-12 w-12 rounded-full object-cover"
             src={imageUrl}

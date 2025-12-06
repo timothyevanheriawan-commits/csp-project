@@ -75,9 +75,9 @@ export default function AboutPage() {
                   Sebuah Platform dari Hati untuk Pecinta Kuliner
                 </h2>
                 <blockquote className="mb-6 border-l-4 border-green-500 pl-6 text-lg italic text-slate-700">
-                  "Kami membayangkan sebuah ruang digital di mana resep warisan keluarga bisa hidup berdampingan
+                  &ldquo;Kami membayangkan sebuah ruang digital di mana resep warisan keluarga bisa hidup berdampingan
                   dengan kreasi modern, di mana setiap orang bisa menjadi koki, pencerita, dan penjaga tradisi rasa.
-                  - Sebastian A. Indrawan"
+                  - Sebastian A. Indrawan&ldquo;
                 </blockquote>
                 <p className="text-slate-600">
                   Inilah semangat yang mendorong lahirnya RecipeShare.
@@ -128,7 +128,7 @@ export default function AboutPage() {
 
         <section style={{ backgroundColor: "#eaf8ee" }} className="py-20 sm:py-20">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <div className="relative overflow-hidden rounded-xl bg-gradient-to-r from-green-600 to-emerald-500 p-12 text-center">
+            <div className="relative overflow-hidden rounded-xl bg-linear-to-r from-green-600 to-emerald-500 p-12 text-center">
               <div className="absolute -top-10 -right-10 h-40 w-40 rounded-full bg-white/10" />
               <div className="absolute -bottom-16 -left-10 h-56 w-56 rounded-full bg-white/10" />
               <div className="relative">
