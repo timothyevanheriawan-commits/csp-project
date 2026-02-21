@@ -1,34 +1,36 @@
-import Link from 'next/link';
-import React from 'react';
+import Link from "next/link";
+import { LucideIcon } from "lucide-react";
+import { motion } from "framer-motion";
 
 interface EmptyStateProps {
-  icon: React.ElementType;
+  icon: LucideIcon;
   title: string;
   description: string;
   buttonText: string;
   buttonHref: string;
 }
 
-const EmptyState: React.FC<EmptyStateProps> = ({ icon: Icon, title, description, buttonText, buttonHref }) => {
+export default function EmptyState({ icon: Icon, title, description, buttonText, buttonHref }: EmptyStateProps) {
   return (
-    <div className="text-center bg-white p-12 rounded-lg shadow-sm border border-gray-200">
-      <div className="flex justify-center items-center mx-auto w-16 h-16 bg-green-100 rounded-full mb-4">
-        <Icon className="w-8 h-8 text-green-600" />
+    <motion.div
+      initial={{ opacity: 0, scale: 0.95 }}
+      animate={{ opacity: 1, scale: 1 }}
+      className="text-center py-16"
+    >
+      <div className="bg-white rounded-2xl p-10 max-w-sm mx-auto border border-primary-100"
+        style={{ boxShadow: 'var(--shadow-md)' }}>
+        <div className="w-14 h-14 rounded-2xl bg-primary-50 flex items-center justify-center mx-auto mb-5">
+          <Icon className="w-7 h-7 text-primary-400 animate-float" />
+        </div>
+        <h3 className="font-heading text-xl text-text mb-2">{title}</h3>
+        <p className="text-text-secondary text-sm mb-6 leading-relaxed">{description}</p>
+        <Link
+          href={buttonHref}
+          className="btn btn-primary px-6 py-3 rounded-xl text-sm"
+        >
+          {buttonText}
+        </Link>
       </div>
-      <h3 className="text-2xl font-semibold text-gray-800 mb-2">
-        {title}
-      </h3>
-      <p className="text-gray-500 mb-6 max-w-sm mx-auto">
-        {description}
-      </p>
-      <Link
-        href={buttonHref}
-        className="inline-block bg-green-600 text-white font-semibold px-6 py-3 rounded-lg hover:bg-green-700 transition-colors"
-      >
-        {buttonText}
-      </Link>
-    </div>
+    </motion.div>
   );
-};
-
-export default EmptyState;
+}

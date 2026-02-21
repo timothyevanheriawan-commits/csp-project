@@ -1,10 +1,9 @@
-
-import NextAuth from "next-auth";
+import NextAuth, { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
-import { supabase } from "@/lib/supabaseClient";
+import { supabaseAdmin } from "@/lib/supabaseAdmin";
 import bcrypt from "bcryptjs";
 
-export const authOptions = {
+export const authOptions: NextAuthOptions = {
   providers: [
     CredentialsProvider({
       name: "credentials",
@@ -14,23 +13,22 @@ export const authOptions = {
       },
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) {
-          console.log("Authorize: Missing credentials");
           return null;
         }
 
-        const { data: user, error } = await supabase
+        // Use supabaseAdmin to find the user to bypass RLS during login
+        const { data: user, error } = await supabaseAdmin
           .from("User")
-          .select("*")
+          .select("id, email, password, name, image, role, status")
           .eq("email", credentials.email)
           .single();
 
         if (error || !user) {
-          console.error("Authorize: User not found or Supabase error:", error);
+          console.error("Authorize error:", error);
           return null;
         }
 
         if (!user.password) {
-          console.log("Authorize: User does not have a password");
           return null;
         }
 
@@ -40,6 +38,9 @@ export const authOptions = {
         );
 
         if (isValid) {
+          if (user.status === "BANNED") {
+            throw new Error("Akun Anda telah ditangguhkan.");
+          }
           return user;
         } else {
           return null;
@@ -56,16 +57,15 @@ export const authOptions = {
   },
   callbacks: {
     async jwt({ token, user, trigger, session }) {
-      // Saat login pertama kali, simpan data user ke token
       if (user) {
         token.id = user.id;
         token.name = user.name;
         token.picture = user.image;
+        token.role = user.role;
+        token.status = user.status;
       }
 
-      // REVISI: Logika untuk menangani update() dari frontend
       if (trigger === "update" && session) {
-        // Ambil data baru yang dikirim dari profil/pengaturan/page.tsx
         token.name = session.name;
         token.picture = session.image;
       }
@@ -74,10 +74,11 @@ export const authOptions = {
     },
     async session({ session, token }) {
       if (session.user) {
-        // Pastikan ID, nama, dan gambar terbaru diteruskan ke session browser
-        session.user.id = token.id;
-        session.user.name = token.name;
-        session.user.image = token.picture;
+        session.user.id = token.id as string;
+        session.user.name = token.name as string;
+        session.user.image = token.picture as string;
+        session.user.role = token.role as string;
+        session.user.status = token.status as string;
       }
       return session;
     },

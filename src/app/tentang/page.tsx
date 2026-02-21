@@ -1,8 +1,9 @@
+"use client";
+
 import Image from 'next/image';
 import Link from 'next/link';
-import { ChefHat, Users, Sparkles, Heart, Search, Edit3, Share2, LucideIcon } from 'lucide-react';
-import Navbar from '../components/Navbar';
-import Footer from '../components/Footer';
+import { ChefHat, Users, Sparkles, Heart, Search, Edit3, Share2, LucideIcon, ArrowRight } from 'lucide-react';
+import { motion, Variants } from 'framer-motion';
 
 interface CardProps { icon: LucideIcon; title: string; description: string; }
 
@@ -14,146 +15,264 @@ const joinSteps: CardProps[] = [
 
 const principles: CardProps[] = [
   { icon: ChefHat, title: 'Otentisitas', description: 'Kami menghargai resep asli yang diwariskan dari generasi ke generasi, lengkap dengan cerita di baliknya.' },
-  { icon: Users, title: 'Komunitas', description: 'Kami adalah platform yang dibangun oleh dan untuk komunitas pecinta kuliner yang suportif dan saling menginspirasi.' },
+  { icon: Users, title: 'Komunitas', description: 'Platform yang dibangun oleh dan untuk komunitas pecinta kuliner yang suportif dan saling menginspirasi.' },
   { icon: Sparkles, title: 'Inovasi', description: 'Kami mendorong kreasi baru yang terinspirasi dari cita rasa tradisional, karena kuliner terus berkembang.' }
 ];
 
-const FeatureCard = ({ icon: Icon, title, description }: CardProps) => (
-  <div className="rounded-lg border border-gray-100 bg-white p-8 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-lg">
-    <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-full bg-green-100 text-green-600">
-      <Icon size={32} />
-    </div>
-    <h3 className="mb-2 text-xl font-semibold text-slate-900">{title}</h3>
-    <p className="text-slate-600">{description}</p>
-  </div>
-);
-
-const PrincipleCard = ({ icon: Icon, title, description }: CardProps) => (
-  <div className="flex flex-col items-center text-center">
-    <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-green-100 text-green-600">
-      <Icon size={24} />
-    </div>
-    <h3 className="mb-2 text-lg font-semibold text-slate-900">{title}</h3>
-    <p className="text-slate-600">{description}</p>
-  </div>
-);
+const fadeUp: Variants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: [0.16, 1, 0.3, 1] as [number, number, number, number] } }
+};
 
 export default function AboutPage() {
   return (
-    <div className="bg-slate-50 text-slate-800">
-      <Navbar />
-      <header className="relative sm:pt-20 sm:pb-20 overflow-hidden" style={{ backgroundColor: "#eaf8ee" }}>
-        <div className="absolute inset-0 opacity-10">
-          <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
-            <defs>
-              <pattern id="a" patternUnits="userSpaceOnUse" width="40" height="40" patternTransform="scale(2) rotate(45)">
-                <rect x="0" y="0" width="100%" height="100%" fill="none" />
-                <path d="M10-10l20 20m0-40l-20 20" strokeWidth="1" stroke="#a7f3d0" fill="none" />
-              </pattern>
-            </defs>
-            <rect width="100%" height="100%" fill="url(#a)" />
-          </svg>
-        </div>
-        <div className="relative mx-auto max-w-7xl px-4 text-center sm:px-6 lg:px-8">
-          <h1 className="mt-4 text-4xl leading-tight tracking-tight text-slate-900 sm:text-5xl lg:text-6xl">
-            Menyatukan Rasa, <br className="hidden sm:block" />
-            Membagikan Cerita.
-          </h1>
-          <p className="mx-auto mt-6 max-w-2xl text-lg text-slate-600">
-            RecipeShare lahir dari kecintaan terhadap kekayaan kuliner Nusantara.
-            Kami percaya setiap resep memiliki cerita, dan setiap cerita layak untuk dibagikan dan dirayakan bersama.
-          </p>
-        </div>
-      </header>
+    <div className="min-h-screen flex flex-col">
+      {/* Hero Header */}
+      <section className="relative pt-28 pb-20 md:pt-32 md:pb-28 overflow-hidden">
+        <div className="absolute inset-0 bg-nature-gradient" />
+        <div className="absolute inset-0 leaf-dots opacity-30" />
+        <div className="absolute top-0 right-0 w-96 h-96 bg-primary-100/40 rounded-full blur-[120px]" />
+        <div className="absolute bottom-0 left-0 w-72 h-72 bg-secondary-100/30 rounded-full blur-[100px]" />
 
-      <main>
-        <section className="py-20 sm:py-28">
-          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <div className="grid grid-cols-1 items-center gap-12 lg:grid-cols-2">
-              <div className="order-2 lg:order-1">
-                <h2 className="mb-6 text-3xl text-slate-900 lg:text-4xl">
-                  Sebuah Platform dari Hati untuk Pecinta Kuliner
-                </h2>
-                <blockquote className="mb-6 border-l-4 border-green-500 pl-6 text-lg italic text-slate-700">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
+          <motion.div initial="hidden" animate="visible" variants={{ visible: { transition: { staggerChildren: 0.12 } } }}>
+            <motion.div variants={fadeUp}>
+              <span className="text-[11px] font-bold uppercase tracking-[0.3em] text-primary-500 mb-4 block">
+                Tentang Kami
+              </span>
+            </motion.div>
+            <motion.h1 variants={fadeUp} className="font-heading text-4xl sm:text-5xl lg:text-6xl text-text leading-tight mb-6 font-bold">
+              Menyatukan Rasa,{' '}
+              <br className="hidden sm:block" />
+              <span className="relative inline-block">
+                Membagikan Cerita
+                <span className="absolute bottom-1 md:bottom-2 left-0 right-0 h-2.5 md:h-3 bg-primary-200/50 rounded-sm -z-1" />
+              </span>
+            </motion.h1>
+            <motion.p variants={fadeUp} className="text-text-secondary text-lg max-w-2xl mx-auto leading-relaxed">
+              RecipeShare lahir dari kecintaan terhadap kekayaan kuliner Nusantara.
+              Kami percaya setiap resep memiliki cerita, dan setiap cerita layak untuk dibagikan dan dirayakan bersama.
+            </motion.p>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* Story Section */}
+      <section className="py-20 md:py-28 relative">
+        <div className="absolute inset-0 bg-white" />
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center">
+            {/* Text */}
+            <motion.div
+              initial={{ opacity: 0, x: -20 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true, margin: "-80px" }}
+              transition={{ duration: 0.6 }}
+              className="order-2 lg:order-1"
+            >
+              <span className="text-[11px] font-bold uppercase tracking-[0.3em] text-primary-500 mb-4 block">
+                Cerita Kami
+              </span>
+              <h2 className="font-heading text-3xl lg:text-4xl text-text mb-6 font-bold leading-snug">
+                Sebuah Platform dari Hati untuk Pecinta Kuliner
+              </h2>
+
+              <div className="relative pl-6 mb-6 border-l-[3px] border-primary-400">
+                <p className="text-text-secondary text-lg italic leading-relaxed">
                   &ldquo;Kami membayangkan sebuah ruang digital di mana resep warisan keluarga bisa hidup berdampingan
-                  dengan kreasi modern, di mana setiap orang bisa menjadi koki, pencerita, dan penjaga tradisi rasa.
-                  - Sebastian A. Indrawan&ldquo;
-                </blockquote>
-                <p className="text-slate-600">
-                  Inilah semangat yang mendorong lahirnya RecipeShare.
-                  Kami ingin membangun jembatan antar generasi dan budaya melalui bahasa universal yaitu makanan.
+                  dengan kreasi modern, di mana setiap orang bisa menjadi koki, pencerita, dan penjaga tradisi rasa.&rdquo;
                 </p>
+                <p className="text-primary-600 font-semibold text-sm mt-3">— Sebastian A. Indrawan</p>
               </div>
-              <div className="order-1 flex justify-center lg:order-2">
+
+              <p className="text-text-secondary leading-relaxed">
+                Inilah semangat yang mendorong lahirnya RecipeShare.
+                Kami ingin membangun jembatan antar generasi dan budaya melalui bahasa universal yaitu makanan.
+              </p>
+            </motion.div>
+
+            {/* Image */}
+            <motion.div
+              initial={{ opacity: 0, x: 20 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true, margin: "-80px" }}
+              transition={{ duration: 0.6, delay: 0.1 }}
+              className="order-1 lg:order-2 flex justify-center"
+            >
+              <div className="relative">
+                {/* Decorative frame */}
+                <div className="absolute -top-3 -right-3 w-full h-full rounded-2xl border-2 border-primary-200/40 z-0" />
+                <div className="absolute -bottom-3 -left-3 w-24 h-24 bg-primary-100/50 rounded-xl z-0" />
+
                 <Image
                   src="https://images.pexels.com/photos/6019593/pexels-photo-6019593.jpeg"
                   alt="Pendiri RecipeShare"
                   width={450}
                   height={500}
-                  className="rounded-xl object-cover shadow-2xl transition-transform duration-500 hover:scale-105"
+                  className="relative z-10 rounded-2xl object-cover shadow-xl hover:scale-[1.02] transition-transform duration-500"
                 />
               </div>
-            </div>
+            </motion.div>
           </div>
-        </section>
+        </div>
+      </section>
 
-        <section style={{ backgroundColor: "#eaf8ee" }} className="py-20 sm:py-20">
-          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <div className="mb-16 text-center">
-              <h2 className="mb-4 text-3xl text-slate-900 lg:text-4xl">
-                Bergabung dalam Perjalanan Rasa
-              </h2>
-              <p className="mx-auto max-w-2xl text-lg text-slate-600">
-                Menjadi bagian dari komunitas kami sangatlah mudah. Cukup ikuti tiga langkah sederhana ini.
-              </p>
-            </div>
-            <div className="grid grid-cols-1 gap-8 text-center md:grid-cols-3">
-              {joinSteps.map((step, i) => <FeatureCard key={i} {...step} />)}
-            </div>
-          </div>
-        </section>
+      {/* Join Steps */}
+      <section className="py-20 md:py-28 relative overflow-hidden">
+        <div className="absolute inset-0 bg-surface-muted" />
+        <div className="absolute inset-0 leaf-dots opacity-30" />
+        <div className="absolute top-0 left-0 w-64 h-64 bg-primary-100/30 rounded-full blur-[100px]" />
 
-        <section className="py-20 sm:py-28">
-          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <div className="rounded-xl bg-white p-8 shadow-lg sm:p-12">
-              <h2 className="mb-12 text-center text-3xl text-slate-900">
-                Prinsip yang Kami Pegang Teguh
-              </h2>
-              <div className="grid grid-cols-1 gap-x-8 gap-y-12 md:grid-cols-3">
-                {principles.map((p, i) => <PrincipleCard key={i} {...p} />)}
-              </div>
-            </div>
-          </div>
-        </section>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-80px" }}
+            transition={{ duration: 0.6 }}
+            className="text-center mb-14"
+          >
+            <span className="text-[11px] font-bold uppercase tracking-[0.3em] text-primary-500 mb-3 block">
+              Cara Bergabung
+            </span>
+            <h2 className="font-heading text-3xl lg:text-4xl text-text mb-4 font-bold">
+              Bergabung dalam Perjalanan Rasa
+            </h2>
+            <p className="text-text-secondary text-lg max-w-2xl mx-auto">
+              Menjadi bagian dari komunitas kami sangatlah mudah. Cukup ikuti tiga langkah sederhana ini.
+            </p>
+          </motion.div>
 
-        <section style={{ backgroundColor: "#eaf8ee" }} className="py-20 sm:py-20">
-          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <div className="relative overflow-hidden rounded-xl bg-linear-to-r from-green-600 to-emerald-500 p-12 text-center">
-              <div className="absolute -top-10 -right-10 h-40 w-40 rounded-full bg-white/10" />
-              <div className="absolute -bottom-16 -left-10 h-56 w-56 rounded-full bg-white/10" />
-              <div className="relative">
-                <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-white/20">
-                  <Heart className="text-white" size={32} />
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {joinSteps.map((step, i) => (
+              <motion.div
+                key={i}
+                initial={{ opacity: 0, y: 25 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: "-40px" }}
+                transition={{ duration: 0.5, delay: i * 0.1 }}
+                className="group p-7 rounded-2xl bg-white border border-primary-50 hover:border-primary-200/60 card-lift text-center relative overflow-hidden"
+                style={{ boxShadow: 'var(--shadow-sm)' }}
+              >
+                {/* Corner accent */}
+                <div className="absolute top-0 right-0 w-16 h-16 overflow-hidden rounded-tr-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500">
+                  <div className="absolute top-0 right-0 w-px h-10 bg-linear-to-b from-primary-300/40 to-transparent" />
+                  <div className="absolute top-0 right-0 h-px w-10 bg-linear-to-l from-primary-300/40 to-transparent" />
                 </div>
-                <h2 className="mb-4 text-3xl text-white">
+
+                <div className="mx-auto mb-5 w-14 h-14 rounded-xl bg-primary-50 flex items-center justify-center group-hover:bg-primary-100 group-hover:scale-110 transition-all duration-500">
+                  <step.icon className="w-7 h-7 text-primary-600" />
+                </div>
+                <h3 className="font-heading text-xl text-text mb-2 font-bold">{step.title}</h3>
+                <p className="text-text-secondary text-sm leading-relaxed">{step.description}</p>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Principles */}
+      <section className="py-20 md:py-28 relative">
+        <div className="absolute inset-0 bg-white" />
+
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-80px" }}
+            transition={{ duration: 0.6 }}
+            className="text-center mb-14"
+          >
+            <span className="text-[11px] font-bold uppercase tracking-[0.3em] text-primary-500 mb-3 block">
+              Nilai Kami
+            </span>
+            <h2 className="font-heading text-3xl lg:text-4xl text-text font-bold">
+              Prinsip yang Kami Pegang Teguh
+            </h2>
+          </motion.div>
+
+          <div className="bg-white rounded-2xl p-8 md:p-12 border border-primary-50"
+            style={{ boxShadow: 'var(--shadow-md)' }}>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
+              {principles.map((p, i) => (
+                <motion.div
+                  key={i}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true, margin: "-40px" }}
+                  transition={{ duration: 0.5, delay: i * 0.1 }}
+                  className="flex flex-col items-center text-center"
+                >
+                  <div className="mb-4 w-12 h-12 rounded-full bg-primary-50 flex items-center justify-center">
+                    <p.icon className="w-6 h-6 text-primary-600" />
+                  </div>
+                  <h3 className="font-heading text-lg text-text mb-2 font-bold">{p.title}</h3>
+                  <p className="text-text-secondary text-sm leading-relaxed">{p.description}</p>
+
+                  {/* Decorative line */}
+                  <div className="mt-5 w-8 h-0.5 bg-linear-to-r from-primary-300 to-secondary-300 rounded-full" />
+                </motion.div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* CTA */}
+      <section className="py-20 md:py-28 relative overflow-hidden">
+        <div className="absolute inset-0 bg-surface-muted" />
+        <div className="absolute inset-0 leaf-dots opacity-20" />
+
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+          <motion.div
+            initial={{ opacity: 0, y: 25 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-80px" }}
+            transition={{ duration: 0.6 }}
+          >
+            <div className="relative rounded-2xl overflow-hidden">
+              {/* Background gradient */}
+              <div className="absolute inset-0 bg-linear-to-br from-primary-600 via-primary-500 to-secondary-500" />
+              <div className="absolute inset-0 grain-overlay" />
+
+              {/* Decorative circles */}
+              <div className="absolute -top-8 -right-8 w-40 h-40 rounded-full bg-white/8" />
+              <div className="absolute -bottom-12 -left-8 w-56 h-56 rounded-full bg-white/5" />
+              <div className="absolute top-1/2 right-1/4 w-20 h-20 rounded-full bg-white/5" />
+
+              <div className="relative z-10 p-10 md:p-14 text-center">
+                <div className="mx-auto mb-6 w-16 h-16 rounded-2xl bg-white/15 backdrop-blur-sm flex items-center justify-center border border-white/20">
+                  <Heart className="w-8 h-8 text-white" />
+                </div>
+
+                <h2 className="font-heading text-3xl md:text-4xl text-white mb-4 font-bold">
                   Jadilah Bagian dari Cerita Kami
                 </h2>
-                <p className="mx-auto mb-8 max-w-xl text-green-100">
+                <p className="text-white/75 text-lg max-w-xl mx-auto mb-8 leading-relaxed">
                   Punya resep andalan keluarga? Atau baru saja mencoba resep baru yang luar biasa?
-                  Bagikan kreasimu dan jadilah inspirasi bagi jutaan pecinta kuliner lainnya!
+                  Bagikan kreasimu dan jadilah inspirasi bagi pecinta kuliner lainnya!
                 </p>
-                <Link
-                  href="/tambah-resep"
-                  className="inline-block rounded-lg bg-white px-8 py-3 font-semibold text-green-600 shadow-lg transition-all hover:scale-105 hover:bg-gray-100"
-                >
-                  Bagikan Resep Sekarang
-                </Link>
+
+                <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                  <Link
+                    href="/tambah-resep"
+                    className="inline-flex items-center justify-center gap-2 px-8 py-3.5 bg-white text-primary-700 font-bold rounded-xl shadow-lg hover:bg-primary-50 hover:scale-[1.02] active:scale-[0.98] transition-all duration-300"
+                  >
+                    <Edit3 className="w-4 h-4" />
+                    Bagikan Resep Sekarang
+                  </Link>
+                  <Link
+                    href="/resep"
+                    className="inline-flex items-center justify-center gap-2 px-8 py-3.5 bg-white/12 text-white font-semibold rounded-xl border border-white/20 backdrop-blur-sm hover:bg-white/20 hover:border-white/35 active:scale-[0.98] transition-all duration-300"
+                  >
+                    Jelajahi Resep
+                    <ArrowRight className="w-4 h-4" />
+                  </Link>
+                </div>
               </div>
             </div>
-          </div>
-        </section>
-      </main>
-      <Footer />
+          </motion.div>
+        </div>
+      </section>
     </div>
   );
 }

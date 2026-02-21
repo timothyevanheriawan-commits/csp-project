@@ -2,12 +2,8 @@ import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabaseClient";
 import { supabaseAdmin } from "@/lib/supabaseAdmin";
 import { getServerSession } from "next-auth/next";
+import { authOptions } from "../auth/[...nextauth]/route";
 
-/**
- * @handler GET
- * @description Mengambil semua data resep. Menggunakan client publik karena
- *              kita sudah mengatur policy SELECT di Supabase.
- */
 export async function GET() {
   try {
     const { data: recipes, error } = await supabase
@@ -17,25 +13,24 @@ export async function GET() {
 
     if (error) throw error;
     return NextResponse.json(recipes);
-  } catch (error) {
-    console.error("GET RECIPES ERROR:", error.message);
+  } catch (error: unknown) {
+    if (error instanceof Error) {
+      console.error("GET RECIPES ERROR:", error.message);
+    }
     return NextResponse.json(
       { message: "Gagal mengambil data resep." },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
-/**
- * @handler POST
- * @description Membuat resep baru. Menggunakan Admin Client untuk melewati RLS.
- */
-export async function POST(request) {
-  const session = await getServerSession();
+
+export async function POST(request: Request) {
+  const session = await getServerSession(authOptions);
 
   if (!session || !session.user || !session.user.email) {
     return NextResponse.json(
       { message: "Unauthorized: Anda harus login untuk membuat resep." },
-      { status: 401 }
+      { status: 401 },
     );
   }
 
@@ -67,16 +62,20 @@ export async function POST(request) {
 
     if (!newRecipe) {
       throw new Error(
-        "Gagal membuat resep, data tidak kembali setelah insert."
+        "Gagal membuat resep, data tidak kembali setelah insert.",
       );
     }
 
     return NextResponse.json(newRecipe);
-  } catch (error) {
-    console.error("CREATE_RECIPE_ERROR:", error.message);
+  } catch (error: unknown) {
+    let errorMessage = "Internal Server Error";
+    if (error instanceof Error) {
+      console.error("CREATE_RECIPE_ERROR:", error.message);
+      errorMessage = error.message;
+    }
     return NextResponse.json(
-      { message: `Internal Server Error: ${error.message}` },
-      { status: 500 }
+      { message: `Internal Server Error: ${errorMessage}` },
+      { status: 500 },
     );
   }
 }

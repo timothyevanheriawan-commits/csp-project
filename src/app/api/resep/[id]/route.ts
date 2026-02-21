@@ -1,12 +1,15 @@
-// File: src/app/api/resep/[id]/route.js
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import { supabaseAdmin } from "@/lib/supabaseAdmin";
 
+type Params = Promise<{ id: string }>;
+
 // 1. FUNGSI UNTUK MENGAMBIL DATA (GET)
-export async function GET(request, { params }) {
-  // Selalu gunakan await params di awal
+export async function GET(
+  request: NextRequest,
+  { params }: { params: Params },
+) {
   const { id: recipeId } = await params;
 
   try {
@@ -34,8 +37,10 @@ export async function GET(request, { params }) {
 }
 
 // 2. FUNGSI UNTUK UPDATE DATA (PATCH)
-export async function PATCH(request, { params }) {
-  // PERBAIKAN: Harus di-await agar ID terbaca
+export async function PATCH(
+  request: NextRequest,
+  { params }: { params: Params },
+) {
   const { id: recipeId } = await params;
 
   const session = await getServerSession(authOptions);
@@ -66,7 +71,7 @@ export async function PATCH(request, { params }) {
       return NextResponse.json({ message: "User not found" }, { status: 404 });
     }
 
-    // 2. Update resep HANYA JIKA id resep DAN authorId cocok (Keamanan!)
+    // 2. Update resep HANYA JIKA id resep DAN authorId cocok
     const { data: updatedRecipe, error } = await supabaseAdmin
       .from("Recipe")
       .update({
@@ -79,7 +84,7 @@ export async function PATCH(request, { params }) {
         category,
         updatedAt: new Date().toISOString(),
       })
-      .match({ id: recipeId, authorId: user.id }) // Memastikan hanya pemilik yang bisa edit
+      .match({ id: recipeId, authorId: user.id })
       .select()
       .single();
 
@@ -99,8 +104,10 @@ export async function PATCH(request, { params }) {
 }
 
 // 3. FUNGSI UNTUK HAPUS DATA (DELETE)
-export async function DELETE(request, { params }) {
-  // PERBAIKAN: Harus di-await agar ID terbaca
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: Params },
+) {
   const { id: recipeId } = await params;
 
   const session = await getServerSession(authOptions);

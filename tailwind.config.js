@@ -4,6 +4,7 @@ module.exports = {
     "./src/pages/**/*.{js,ts,jsx,tsx,mdx}",
     "./src/components/**/*.{js,ts,jsx,tsx,mdx}",
     "./src/app/**/*.{js,ts,jsx,tsx,mdx}",
+    "./src/app/admin/**/*.{js,ts,jsx,tsx,mdx}",
   ],
   theme: {
     extend: {
@@ -52,8 +53,9 @@ module.exports = {
         },
       },
       fontFamily: {
-        heading: ["Playfair Display", "serif"],
-        body: ["Inter", "sans-serif"],
+        // Menghubungkan variabel CSS dari layout.tsx ke class Tailwind
+        heading: ["var(--font-heading)"],
+        body: ["var(--font-body)"],
       },
       boxShadow: {
         soft: "0 2px 8px rgba(46, 139, 87, 0.08)",
@@ -62,7 +64,5 @@ module.exports = {
       },
     },
   },
-  plugins: [
-    
-  ],
+  plugins: [],
 };

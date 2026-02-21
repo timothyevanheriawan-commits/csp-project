@@ -1,9 +1,11 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import { supabaseAdmin } from "@/lib/supabaseAdmin";
 
-async function getUserIdFromSession(session) {
+type Params = Promise<{ id: string }>;
+
+async function getUserIdFromSession(session: any) {
   if (!session?.user?.email) return null;
   const { data: user } = await supabaseAdmin
     .from("User")
@@ -13,19 +15,17 @@ async function getUserIdFromSession(session) {
   return user?.id;
 }
 
-function getRecipeIdFromUrl(url) {
-  const parts = url.split("/");
-  return parts[parts.length - 2];
-}
-
-export async function POST(request) {
+export async function POST(
+  request: NextRequest,
+  { params }: { params: Params },
+) {
   const session = await getServerSession(authOptions);
   if (!session) {
     return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
   }
 
   const userId = await getUserIdFromSession(session);
-  const recipeId = getRecipeIdFromUrl(request.nextUrl.pathname);
+  const { id: recipeId } = await params;
 
   if (!userId || !recipeId) {
     return NextResponse.json(
@@ -61,14 +61,17 @@ export async function POST(request) {
   }
 }
 
-export async function DELETE(request) {
-  const session = await getServerSession();
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: Params },
+) {
+  const session = await getServerSession(authOptions);
   if (!session) {
     return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
   }
 
   const userId = await getUserIdFromSession(session);
-  const recipeId = getRecipeIdFromUrl(request.nextUrl.pathname);
+  const { id: recipeId } = await params;
 
   if (!userId || !recipeId) {
     return NextResponse.json(

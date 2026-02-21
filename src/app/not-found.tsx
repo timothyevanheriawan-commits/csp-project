@@ -1,31 +1,39 @@
+import Link from "next/link";
+import { Home, Search } from "lucide-react";
 
-import Link from 'next/link';
-import React from 'react';
-
-const NotFoundPage: React.FC = () => {
+export default function NotFound() {
   return (
-    <div className="flex flex-col items-center justify-center min-h-[calc(100vh-200px)] text-center px-4">
+    <div className="min-h-[80vh] flex items-center justify-center relative">
+      <div className="absolute inset-0 bg-nature-gradient" />
+      <div className="absolute inset-0 leaf-dots opacity-20" />
 
-      <h1 className="text-6xl md:text-9xl font-extrabold text-green-600">
-        404
-      </h1>
+      <div className="text-center px-4 relative z-10">
+        {/* Big 404 */}
+        <h1 className="font-heading text-[8rem] md:text-[12rem] leading-none text-primary-100 select-none">
+          404
+        </h1>
 
-      <h2 className="mt-4 text-2xl md:text-3xl font-bold text-gray-800">
-        Halaman Tidak Ditemukan
-      </h2>
+        <div className="-mt-8 md:-mt-12">
+          <h2 className="font-heading text-2xl md:text-3xl text-text mb-3">
+            Halaman Tidak Ditemukan
+          </h2>
+          <p className="text-text-secondary max-w-md mx-auto mb-8">
+            Sepertinya resep yang Anda cari sudah berpindah dapur.
+            Mari kembali dan temukan resep lezat lainnya!
+          </p>
 
-      <p className="mt-2 text-base text-gray-500 max-w-md">
-        Maaf, kami tidak dapat menemukan halaman yang Anda cari. Mungkin URL-nya salah ketik atau halaman tersebut sudah tidak ada lagi.
-      </p>
-
-      <Link
-        href="/"
-        className="mt-8 inline-block bg-green-600 text-white font-semibold px-6 py-3 rounded-lg hover:bg-green-700 transition-colors duration-300"
-      >
-        Kembali ke Halaman Utama
-      </Link>
+          <div className="flex flex-col sm:flex-row gap-3 justify-center">
+            <Link href="/" className="btn btn-primary px-6 py-3 rounded-xl gap-2">
+              <Home className="w-4 h-4" />
+              Kembali ke Beranda
+            </Link>
+            <Link href="/resep" className="btn btn-ghost px-6 py-3 rounded-xl gap-2">
+              <Search className="w-4 h-4" />
+              Cari Resep
+            </Link>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
-
-export default NotFoundPage;

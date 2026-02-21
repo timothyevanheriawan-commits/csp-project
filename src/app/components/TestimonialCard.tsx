@@ -1,3 +1,5 @@
+"use client";
+
 import Image from 'next/image';
 import React from 'react';
 
@@ -10,21 +12,30 @@ interface TestimonialCardProps {
 
 const TestimonialCard: React.FC<TestimonialCardProps> = ({ quote, name, role, imageUrl }) => {
   return (
-    <div className="bg-white p-8 rounded-xl shadow-soft transition-transform hover:scale-105">
-      <p className="text-text-light font-body italic mb-6">&ldquo;{quote}&rdquo;</p>
-      <div className="flex items-center">
-        <div className="shrink-0">
+    <div className="relative p-7 rounded-2xl bg-white/5 border border-white/8 backdrop-blur-sm transition-all duration-500 hover:bg-white/8 hover:border-white/15 group h-full flex flex-col">
+      {/* Decorative quote */}
+      <div className="absolute top-5 right-6 font-heading text-6xl text-primary-400/10 leading-none group-hover:text-primary-400/15 transition-colors duration-500 select-none">
+        &ldquo;
+      </div>
+
+      <p className="text-white/70 text-sm leading-relaxed mb-7 relative z-10 grow group-hover:text-white/80 transition-colors duration-500">
+        &ldquo;{quote}&rdquo;
+      </p>
+
+      <div className="flex items-center gap-3 relative z-10">
+        <div className="relative shrink-0">
           <Image
-            className="h-12 w-12 rounded-full object-cover"
+            className="h-11 w-11 rounded-full object-cover ring-2 ring-primary-400/20"
             src={imageUrl}
             alt={`Foto ${name}`}
-            width={48}
-            height={48}
+            width={44}
+            height={44}
           />
+          <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-primary-500 rounded-full border-2 border-primary-900" />
         </div>
-        <div className="ml-4">
-          <div className="font-heading text-lg font-semibold text-text">{name}</div>
-          <div className="text-sm text-text-light">{role}</div>
+        <div>
+          <div className="text-sm font-semibold text-white">{name}</div>
+          <div className="text-[11px] text-primary-300/70">{role}</div>
         </div>
       </div>
     </div>

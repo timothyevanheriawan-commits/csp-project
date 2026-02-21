@@ -1,37 +1,39 @@
 "use client";
 
-import React, { useState, useEffect, useMemo, FC } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import RecipeCard from '../components/RecipeCard';
-import Navbar from '../components/Navbar';
-import Footer from '../components/Footer';
-import { ChefHat, Coffee, Cake, UtensilsCrossed, Cookie, Search, Grid3x3, List, Loader2 } from 'lucide-react';
+import { LucideIcon, Coffee, Cake, UtensilsCrossed, Cookie, Search, Grid3x3, List, Loader2, Plus } from 'lucide-react';
+import * as LucideIcons from "lucide-react";
 import Link from 'next/link';
-import { SaveButton } from '../components/SaveButton';
 import { Recipe } from '../types/Recipe';
-import Image from 'next/image';
+import { motion } from "framer-motion";
 
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: { opacity: 1, transition: { staggerChildren: 0.05 } }
+};
+const itemVariants = {
+  hidden: { opacity: 0, y: 14 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.4, ease: [0.16, 1, 0.3, 1] as const } }
+};
 
-const categories = {
-  SEMUA: { label: 'Semua Resep', icon: Grid3x3 },
+interface CategoryInfo { label: string; icon: LucideIcon; }
+interface DBCategory { id: string; name: string; icon?: string; }
+const DEFAULT_CATEGORIES: Record<string, CategoryInfo> = {
+  SEMUA: { label: 'Semua', icon: Grid3x3 },
   MAKANAN_UTAMA: { label: 'Makanan Utama', icon: UtensilsCrossed },
   KUE_DESSERT: { label: 'Kue & Dessert', icon: Cake },
   MINUMAN: { label: 'Minuman', icon: Coffee },
   CAMILAN: { label: 'Camilan', icon: Cookie },
 };
 
-type CategoryKey = keyof typeof categories;
-
 const difficultyOrder: Record<string, number> = { 'MUDAH': 0, 'SEDANG': 1, 'SULIT': 2 };
-
-const getDifficultyClass = (difficulty: string) => {
-  const d = difficulty.toUpperCase();
-  return d === 'MUDAH' ? 'bg-green-100 text-green-700' : d === 'SEDANG' ? 'bg-yellow-100 text-yellow-700' : 'bg-red-100 text-red-700';
-};
 
 export default function ResepPage() {
   const [allRecipes, setAllRecipes] = useState<Recipe[]>([]);
   const [savedRecipeIds, setSavedRecipeIds] = useState<Set<string>>(new Set());
-  const [selectedCategory, setSelectedCategory] = useState<CategoryKey>('SEMUA');
+  const [dynamicCategories, setDynamicCategories] = useState<Record<string, CategoryInfo>>(DEFAULT_CATEGORIES);
+  const [selectedCategory, setSelectedCategory] = useState<string>('SEMUA');
   const [isLoading, setIsLoading] = useState(true);
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [searchQuery, setSearchQuery] = useState('');
@@ -45,27 +47,34 @@ export default function ResepPage() {
           fetch('/api/resep'),
           fetch('/api/profil/saved-recipe-ids')
         ]);
-
         if (!recipesRes.ok) throw new Error("Gagal mengambil data resep");
-
         const recipesData = await recipesRes.json();
         setAllRecipes(recipesData);
-
         if (savedIdsRes.ok) {
           const savedIdsData = await savedIdsRes.json();
           setSavedRecipeIds(new Set(savedIdsData));
         }
-
-      } catch (error) {
-        console.error(error);
-      } finally {
-        setIsLoading(false);
-      }
+        const catRes = await fetch('/api/categories');
+        if (catRes.ok) {
+          const categoriesData = await catRes.json();
+          if (categoriesData && categoriesData.length > 0) {
+            const mapped: Record<string, CategoryInfo> = { SEMUA: DEFAULT_CATEGORIES.SEMUA };
+            categoriesData.forEach((cat: DBCategory) => {
+              const iconName = cat.icon || "UtensilsCrossed";
+              const Icon = (LucideIcons as unknown as Record<string, LucideIcon>)[iconName] || UtensilsCrossed;
+              const key = cat.name.toUpperCase().replace(/\s+/g, '_');
+              mapped[key] = { label: cat.name, icon: Icon };
+            });
+            setDynamicCategories(mapped);
+          }
+        }
+      } catch (error) { console.error(error); }
+      finally { setIsLoading(false); }
     };
     fetchInitialData();
   }, []);
 
-  const filteredAndSearchedRecipes = useMemo(() => {
+  const filteredRecipes = useMemo(() => {
     return allRecipes
       .filter(recipe => {
         const categoryMatch = selectedCategory === 'SEMUA' || recipe.category === selectedCategory;
@@ -73,226 +82,155 @@ export default function ResepPage() {
         return categoryMatch && searchMatch;
       })
       .sort((a, b) => {
-        if (sortBy === 'newest') {
-          return new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime();
-        }
-        if (sortBy === 'easiest') {
-          const difficultyA = difficultyOrder[a.difficulty] ?? 99;
-          const difficultyB = difficultyOrder[b.difficulty] ?? 99;
-          return difficultyA - difficultyB;
-        }
+        if (sortBy === 'newest') return new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime();
+        if (sortBy === 'easiest') return (difficultyOrder[a.difficulty] ?? 99) - (difficultyOrder[b.difficulty] ?? 99);
         return 0;
       });
   }, [allRecipes, selectedCategory, searchQuery, sortBy]);
 
   const categoryStats = useMemo(() => {
-    const stats: Record<CategoryKey, number> = { SEMUA: allRecipes.length, MAKANAN_UTAMA: 0, KUE_DESSERT: 0, MINUMAN: 0, CAMILAN: 0 };
-    allRecipes.forEach(r => {
-      if (r.category in stats) {
-        stats[r.category as 'MAKANAN_UTAMA' | 'KUE_DESSERT' | 'MINUMAN' | 'CAMILAN']++;
-      }
-    }); return stats;
-  }, [allRecipes]);
+    const stats: Record<string, number> = { SEMUA: allRecipes.length };
+    Object.keys(dynamicCategories).forEach(k => { if (k !== 'SEMUA') stats[k] = 0; });
+    allRecipes.forEach(r => { if (r.category in stats) stats[r.category]++; });
+    return stats;
+  }, [allRecipes, dynamicCategories]);
 
-  const SelectedIcon = categories[selectedCategory].icon;
-
-  const CategoryButton: FC<{ categoryKey: CategoryKey }> = ({ categoryKey }) => {
-    const { label, icon: Icon } = categories[categoryKey];
-    const isSelected = selectedCategory === categoryKey;
-    const count = categoryStats[categoryKey];
-    const baseClasses = "p-4 rounded-xl transition-all duration-200 bg-white shadow-sm hover:shadow-lg";
-    return (
-      <button
-        onClick={() => setSelectedCategory(categoryKey)}
-        className={`${baseClasses} ${isSelected ? 'border-2 border-primary-500 shadow-xl' : 'border border-gray-200 hover:border-gray-300'}`}
-      >
-        <Icon className={`w-6 h-6 mb-2 mx-auto ${isSelected ? 'text-primary-500' : 'text-gray-600'}`} />
-        <h3 className={`font-medium text-sm ${isSelected ? 'text-primary-600' : 'text-text'}`}>{label}</h3>
-        <p className={`text-xs mt-1 ${isSelected ? 'text-primary-500' : 'text-text-lighter'}`}>{count} Resep</p>
-        {isSelected && (<div className="mt-2 mx-auto w-8 h-1 bg-primary-500 rounded-full"></div>)}
-      </button>
-    );
-  };
+  const SelectedIcon = dynamicCategories[selectedCategory]?.icon || Grid3x3;
 
   return (
-    <div className="min-h-screen flex flex-col font-inter" style={{ backgroundColor: "#eaf8ee" }}>
-      <Navbar />
-      <main className="grow">
-        <section className="relative py-16 overflow-hidden" style={{ backgroundColor: "#eaf8ee" }}>
-          <div className="absolute top-5 right-10 w-24 h-24 bg-accent-200 rounded-full opacity-20 animate-pulse"></div>
-          <div className="absolute bottom-5 left-10 w-32 h-32 bg-secondary-200 rounded-full opacity-20 animate-pulse delay-1000"></div>
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
-            <div className="text-center">
-              <h1 className="text-4xl md:text-5xl text-gray-800 mb-4">Resep</h1>
-              <p className="text-gray-600 text-lg max-w-2xl mx-auto">Temukan resep pilihan berdasarkan kategori, dari hidangan utama hingga camilan.</p>
+    <div className="min-h-screen flex flex-col">
+      {/* Page header */}
+      <section className="relative pt-28 pb-14 overflow-hidden">
+        <div className="absolute inset-0 bg-primary-900 grain-overlay" />
+        <div className="absolute top-16 right-10 w-40 h-40 bg-primary-600/10 rounded-full blur-[70px]" />
+        <div className="absolute bottom-8 left-16 w-28 h-28 bg-secondary-500/8 rounded-full blur-[50px]" />
+
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+          <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
+            <span className="text-[11px] font-bold uppercase tracking-[0.3em] text-primary-400 mb-3 block">Koleksi Resep</span>
+            <h1 className="font-heading text-4xl md:text-5xl text-white mb-3 font-bold">Jelajahi Resep</h1>
+            <p className="text-primary-300/60 text-lg max-w-xl">Temukan resep pilihan berdasarkan kategori, dari hidangan utama hingga camilan.</p>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* Category pills — sticky */}
+      <section className="sticky top-16 md:top-[72px] z-30 bg-white/92 backdrop-blur-xl border-b border-primary-100/50 shadow-xs">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
+          <div className="flex gap-2 overflow-x-auto pb-0.5 scrollbar-hide">
+            {Object.entries(dynamicCategories).map(([key, { label, icon: Icon }]) => {
+              const isActive = selectedCategory === key;
+              const count = categoryStats[key] || 0;
+              return (
+                <button
+                  key={key}
+                  onClick={() => setSelectedCategory(key)}
+                  className={`flex items-center gap-2 px-4 py-2.5 rounded-full text-sm font-medium whitespace-nowrap transition-all duration-300 shrink-0 ${isActive
+                    ? "bg-primary-500 text-white shadow-md shadow-primary-500/20"
+                    : "bg-primary-50 text-text-secondary hover:bg-primary-100 hover:text-primary-700"
+                    }`}
+                >
+                  <Icon className="w-4 h-4" />
+                  {label}
+                  <span className={`text-xs px-1.5 py-0.5 rounded-full font-bold ${isActive ? "bg-white/20 text-white" : "bg-primary-100 text-primary-600"
+                    }`}>{count}</span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+
+      {/* Search + View */}
+      <section className="bg-white border-b border-primary-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+          <div className="flex flex-col sm:flex-row gap-3 items-center justify-between">
+            <div className="relative w-full sm:w-96">
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-text-muted" />
+              <input type="text" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder={`Cari di ${dynamicCategories[selectedCategory]?.label || 'Semua'}...`}
+                className="input-field pl-11 py-2.5 text-sm" />
+            </div>
+            <div className="flex items-center gap-3">
+              {searchQuery && (
+                <span className="inline-flex items-center gap-1 px-3 py-1.5 bg-primary-50 text-primary-700 rounded-full text-xs font-medium">
+                  &ldquo;{searchQuery}&rdquo;
+                  <button onClick={() => setSearchQuery('')} className="ml-0.5 hover:text-primary-900 font-bold">×</button>
+                </span>
+              )}
+              <div className="flex bg-primary-50/70 rounded-lg p-0.5">
+                <button onClick={() => setViewMode('grid')}
+                  className={`p-2 rounded-md transition-all ${viewMode === 'grid' ? 'bg-white text-primary-600 shadow-sm' : 'text-text-muted hover:text-text-secondary'}`}>
+                  <Grid3x3 className="w-4 h-4" />
+                </button>
+                <button onClick={() => setViewMode('list')}
+                  className={`p-2 rounded-md transition-all ${viewMode === 'list' ? 'bg-white text-primary-600 shadow-sm' : 'text-text-muted hover:text-text-secondary'}`}>
+                  <List className="w-4 h-4" />
+                </button>
+              </div>
             </div>
           </div>
-        </section>
-        <section className="py-8 -mt-8">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-              {(Object.keys(categories) as CategoryKey[]).map(key => <CategoryButton key={key} categoryKey={key} />)}
-            </div>
-          </div>
-        </section>
-        <section className="py-6 bg-white border-y border-gray-100">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex flex-col md:flex-row gap-4 items-center justify-between">
-              <div className="relative w-full md:w-96">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"><Search className="h-5 w-5 text-gray-400" /></div>
-                <input
-                  type="text"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder={`Cari di ${categories[selectedCategory].label}...`}
-                  className="w-full pl-12 pr-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-primary-500 focus:border-primary-500"
-                />
-              </div>
-              <div className="flex gap-3 items-center">
-                <div className="flex bg-gray-100 rounded-lg p-1">
-                  <button
-                    onClick={() => setViewMode('grid')}
-                    aria-label="Tampilan Grid"
-                    className={`p-2 rounded transition-colors ${viewMode === 'grid' ? 'bg-white text-primary-600 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
-                  ><Grid3x3 className="w-4 h-4" /></button>
-                  <button
-                    onClick={() => setViewMode('list')}
-                    aria-label="Tampilan Daftar"
-                    className={`p-2 rounded transition-colors ${viewMode === 'list' ? 'bg-white text-primary-600 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
-                  ><List className="w-4 h-4" /></button>
-                </div>
-              </div>
-            </div>
-            {(searchQuery || selectedCategory !== 'SEMUA') && (
-              <div className="mt-4 flex flex-wrap gap-2">
-                {selectedCategory !== 'SEMUA' && (
-                  <span className="inline-flex items-center gap-1 px-3 py-1 bg-primary-100 text-primary-700 rounded-full text-sm">
-                    <SelectedIcon className="w-3 h-3" />
-                    {categories[selectedCategory].label}
-                  </span>
-                )}
-                {searchQuery && (
-                  <span className="inline-flex items-center gap-1 px-3 py-1 bg-secondary-100 text-secondary-700 rounded-full text-sm">
-                    <Search className="w-3 h-3" />
-                    &ldquo;{searchQuery}&rdquo;
-                    <button
-                      onClick={() => setSearchQuery('')}
-                      className="ml-1 hover:text-secondary-900"
-                    >×
-                    </button>
-                  </span>
-                )}
-              </div>
-            )}
-          </div>
-        </section>
-        <section className="py-12" style={{ backgroundColor: "#eaf8ee" }}>
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            {isLoading ? (
-              <div className="flex flex-col items-center justify-center py-20">
-                <Loader2 className="w-12 h-12 text-primary-500 animate-spin mb-4" />
-                <p className="text-gray-600">Memuat resep...</p>
-              </div>
-            ) : (
-              <>
-                <div className="mb-6">
-                  <p className="text-gray-600">
-                    Menampilkan <span className="font-semibold text-gray-800">{filteredAndSearchedRecipes.length}</span> resep
-                    {selectedCategory !== 'SEMUA' && ` dalam kategori ${categories[selectedCategory].label}`}
-                  </p>
-                </div>
-                {filteredAndSearchedRecipes.length > 0 ? (
-                  <div className={
-                    viewMode === 'grid'
-                      ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8'
-                      : 'flex flex-col gap-4'
-                  }>
-                    {filteredAndSearchedRecipes.map(recipe => {
-                      const isSaved = savedRecipeIds.has(recipe.id);
+        </div>
+      </section>
 
-                      return viewMode === 'grid' ? (
-                        <RecipeCard
-                          key={recipe.id}
-                          recipe={recipe}
-                          isInitiallySaved={isSaved}
-                          viewMode={viewMode}
-                        />
-                      ) : (
-                        <Link href={`/resep/${recipe.id}`} key={recipe.id}>
-                          <div className="bg-white rounded-xl shadow-md hover:shadow-xl transition-all duration-300 p-4 flex gap-4 cursor-pointer group relative">
+      {/* Recipe results */}
+      <section className="py-8 grow relative">
+        <div className="absolute inset-0 bg-nature-gradient" />
+        <div className="absolute inset-0 leaf-dots opacity-30" />
 
-                            <div className="absolute top-3 right-3 z-10" onClick={(e) => { e.stopPropagation(); e.preventDefault(); }}>
-                              <SaveButton recipeId={recipe.id} isInitiallySaved={isSaved} />
-                            </div>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+          {isLoading ? (
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex flex-col items-center justify-center py-24">
+              <Loader2 className="w-10 h-10 text-primary-500 animate-spin mb-4" />
+              <p className="text-text-muted text-sm">Memuat resep lezat...</p>
+            </motion.div>
+          ) : (
+            <>
+              <div className="mb-5">
+                <p className="text-sm text-text-secondary">
+                  Menampilkan <span className="font-bold text-text">{filteredRecipes.length}</span> resep
+                  {selectedCategory !== 'SEMUA' && ` dalam kategori ${dynamicCategories[selectedCategory]?.label}`}
+                </p>
+              </div>
 
-                            <div className="w-32 h-32  bg-gray-200 shrink-0 rounded-lg overflow-hidden">
-                              {recipe.imageUrl ? (
-                                <img
-                                  src={recipe.imageUrl}
-                                  alt={recipe.title}
-                                  className="w-full h-full rounded-lg object-cover group-hover:scale-110 transition-transform duration-300"
-                                />
-                              ) : (
-                                <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-secondary-100 to-secondary-200">
-                                  <ChefHat className="w-8 h-8 text-secondary-400" />
-                                </div>
-                              )}
-                            </div>
-                            <div className="grow pr-8">
-                              <h3 className="text-xl text-gray-800 mb-1 group-hover:text-primary-500 transition-colors">{recipe.title}</h3>
-                              <p className="text-gray-500 text-sm mb-2 line-clamp-2">{recipe.description || "Resep lezat yang wajib dicoba!"}</p>
-                              <div className="flex items-center gap-4 text-sm mt-3">
-                                {recipe.difficulty && (
-                                  <span className={`px-2 py-1 rounded-full text-xs font-medium ${getDifficultyClass(recipe.difficulty)}`}>
-                                    {recipe.difficulty}
-                                  </span>
-                                )}
-                                <div className="text-gray-600">Oleh {recipe.author?.name || 'Anonymous'}</div>
-                              </div>
-                            </div>
-                          </div>
-                        </Link>
-                      );
-                    })}
-                  </div>
-                ) : (
-                  <div className="text-center py-20">
-                    <div className="bg-white rounded-2xl shadow-soft p-12 max-w-md mx-auto ">
-                      <SelectedIcon className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-                      <h3 className="text-2xl text-gray-800 mb-2 ">Tidak Ada Resep</h3>
-                      <p className="text-black-600 mb-6">
-                        {searchQuery
-                          ? `Tidak ada resep yang cocok dengan pencarian "${searchQuery}"`
-                          : `Belum ada resep dalam kategori ${categories[selectedCategory].label}`
-                        }
-                      </p>
-                      <div className="space-y-3">
-                        {searchQuery && (
-                          <button
-                            onClick={() => setSearchQuery('')}
-                            className="w-full bg-gray-200 text-gray-700 py-2 px-4 rounded-lg hover:bg-gray-300 transition-colors"
-                          >Hapus Pencarian
-                          </button>
-                        )}
-                        <Link
-                          href="/tambah-resep"
-                          className="w-full inline-block py-2 px-4 rounded-lg font-semibold text-white"
-                          style={{ backgroundColor: '#ffc145', }}
-                          onMouseEnter={e => (e.currentTarget.style.backgroundColor = '#e0a935')}
-                          onMouseLeave={e => (e.currentTarget.style.backgroundColor = '#ffc145')}
-                        >
-                          + Tambah Resep Baru
-                        </Link>
-                      </div>
+              {filteredRecipes.length > 0 ? (
+                <motion.div
+                  variants={containerVariants} initial="hidden" animate="visible"
+                  key={`${selectedCategory}-${viewMode}`}
+                  className={viewMode === 'grid'
+                    ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 md:gap-6'
+                    : 'flex flex-col gap-3'
+                  }
+                >
+                  {filteredRecipes.map(recipe => (
+                    <motion.div key={recipe.id} variants={itemVariants}>
+                      <RecipeCard recipe={recipe} isInitiallySaved={savedRecipeIds.has(recipe.id)} viewMode={viewMode} />
+                    </motion.div>
+                  ))}
+                </motion.div>
+              ) : (
+                <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="text-center py-20">
+                  <div className="bg-white rounded-2xl p-10 max-w-md mx-auto border border-primary-100" style={{ boxShadow: 'var(--shadow-md)' }}>
+                    <SelectedIcon className="w-14 h-14 text-primary-300 mx-auto mb-4 animate-float" />
+                    <h3 className="font-heading text-2xl text-text mb-2">Tidak Ada Resep</h3>
+                    <p className="text-text-secondary text-sm mb-6">
+                      {searchQuery ? `Tidak ada resep untuk "${searchQuery}"` : `Belum ada resep di kategori ini.`}
+                    </p>
+                    <div className="flex flex-col gap-3">
+                      {searchQuery && (
+                        <button onClick={() => setSearchQuery('')} className="btn btn-ghost w-full rounded-xl">Hapus Pencarian</button>
+                      )}
+                      <Link href="/tambah-resep" className="btn btn-accent w-full rounded-xl">
+                        <Plus size={18} /> Tambah Resep Baru
+                      </Link>
                     </div>
                   </div>
-                )}
-              </>
-            )}
-          </div>
-        </section>
-      </main>
-      <Footer />
+                </motion.div>
+              )}
+            </>
+          )}
+        </div>
+      </section>
     </div>
   );
 }
