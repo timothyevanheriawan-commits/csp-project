@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
-import { supabaseAdmin } from "@/lib/supabaseAdmin";
+import { getSupabaseAdmin } from "@/lib/supabaseAdmin";
 
 type Params = Promise<{ id: string }>;
 
@@ -13,7 +13,7 @@ export async function GET(
   const { id: recipeId } = await params;
 
   try {
-    const { data: recipe, error } = await supabaseAdmin
+    const { data: recipe, error } = await getSupabaseAdmin()
       .from("Recipe")
       .select("*, author:User!authorId(*)")
       .eq("id", recipeId)
@@ -61,7 +61,7 @@ export async function PATCH(
     } = body;
 
     // 1. Cari ID pengguna dari email sesi
-    const { data: user } = await supabaseAdmin
+    const { data: user } = await getSupabaseAdmin()
       .from("User")
       .select("id")
       .eq("email", session.user.email)
@@ -72,7 +72,7 @@ export async function PATCH(
     }
 
     // 2. Update resep HANYA JIKA id resep DAN authorId cocok
-    const { data: updatedRecipe, error } = await supabaseAdmin
+    const { data: updatedRecipe, error } = await getSupabaseAdmin()
       .from("Recipe")
       .update({
         title,
@@ -116,7 +116,7 @@ export async function DELETE(
   }
 
   try {
-    const { data: user } = await supabaseAdmin
+    const { data: user } = await getSupabaseAdmin()
       .from("User")
       .select("id")
       .eq("email", session.user.email)
@@ -126,7 +126,7 @@ export async function DELETE(
       return NextResponse.json({ message: "User not found" }, { status: 404 });
     }
 
-    const { error, count } = await supabaseAdmin
+    const { error, count } = await getSupabaseAdmin()
       .from("Recipe")
       .delete({ count: "exact" })
       .match({ id: recipeId, authorId: user.id });

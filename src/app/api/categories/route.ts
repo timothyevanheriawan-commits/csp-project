@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { supabaseAdmin } from "@/lib/supabaseAdmin";
+import { getSupabaseAdmin } from "@/lib/supabaseAdmin";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "../auth/[...nextauth]/route";
 
@@ -15,7 +15,7 @@ async function checkAdmin() {
 // GET all categories
 export async function GET() {
   try {
-    const { data: categories, error } = await supabaseAdmin
+    const { data: categories, error } = await getSupabaseAdmin()
       .from("RecipeCategory")
       .select("*")
       .order("name", { ascending: true });
@@ -39,7 +39,7 @@ export async function POST(req: Request) {
 
   try {
     const { name, icon } = await req.json();
-    const { data, error } = await supabaseAdmin
+    const { data, error } = await getSupabaseAdmin()
       .from("RecipeCategory")
       .insert([{ name, icon }])
       .select()
@@ -64,7 +64,7 @@ export async function PUT(req: Request) {
 
   try {
     const { id, name, icon } = await req.json();
-    const { data, error } = await supabaseAdmin
+    const { data, error } = await getSupabaseAdmin()
       .from("RecipeCategory")
       .update({ name, icon })
       .eq("id", id)
@@ -95,7 +95,7 @@ export async function DELETE(req: Request) {
     if (!id)
       return NextResponse.json({ message: "ID diperlukan" }, { status: 400 });
 
-    const { error } = await supabaseAdmin
+    const { error } = await getSupabaseAdmin()
       .from("RecipeCategory")
       .delete()
       .eq("id", id);

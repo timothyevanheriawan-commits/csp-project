@@ -2,13 +2,13 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth/next";
 import type { Session } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
-import { supabaseAdmin } from "@/lib/supabaseAdmin";
+import { getSupabaseAdmin } from "@/lib/supabaseAdmin";
 
 type Params = Promise<{ id: string }>;
 
 async function getUserIdFromSession(session: Session) {
   if (!session?.user?.email) return null;
-  const { data: user } = await supabaseAdmin
+  const { data: user } = await getSupabaseAdmin()
     .from("User")
     .select("id")
     .eq("email", session.user.email)
@@ -36,7 +36,7 @@ export async function POST(
   }
 
   try {
-    const { error } = await supabaseAdmin
+    const { error } = await getSupabaseAdmin()
       .from("SavedRecipe")
       .insert([{ userId, recipeId }]);
 
@@ -82,7 +82,7 @@ export async function DELETE(
   }
 
   try {
-    const { error } = await supabaseAdmin
+    const { error } = await getSupabaseAdmin()
       .from("SavedRecipe")
       .delete()
       .eq("userId", userId)

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
-import { supabaseAdmin } from "@/lib/supabaseAdmin";
+import { getSupabaseAdmin } from "@/lib/supabaseAdmin";
 
 export async function PATCH(request: NextRequest) {
   const session = await getServerSession(authOptions);
@@ -13,7 +13,7 @@ export async function PATCH(request: NextRequest) {
     const body = await request.json();
     const { name, image } = body;
 
-    const { data: updatedUser, error } = await supabaseAdmin
+    const { data: updatedUser, error } = await getSupabaseAdmin()
       .from("User")
       .update({
         name,

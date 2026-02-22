@@ -1,6 +1,6 @@
 import NextAuth, { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
-import { supabaseAdmin } from "@/lib/supabaseAdmin";
+import { getSupabaseAdmin } from "@/lib/supabaseAdmin";
 import bcrypt from "bcryptjs";
 
 export const authOptions: NextAuthOptions = {
@@ -16,8 +16,8 @@ export const authOptions: NextAuthOptions = {
           return null;
         }
 
-        // Use supabaseAdmin to find the user to bypass RLS during login
-        const { data: user, error } = await supabaseAdmin
+        // Use getSupabaseAdmin() to find the user to bypass RLS during login
+        const { data: user, error } = await getSupabaseAdmin()
           .from("User")
           .select("id, email, password, name, image, role, status")
           .eq("email", credentials.email)

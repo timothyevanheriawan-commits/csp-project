@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
-import { supabaseAdmin } from "@/lib/supabaseAdmin";
+import { getSupabaseAdmin } from "@/lib/supabaseAdmin";
 import { supabase } from "@/lib/supabaseClient";
 import { z } from "zod";
 
@@ -42,7 +42,7 @@ export async function POST(request: Request) {
     const hashedPassword = await bcrypt.hash(password, 10);
 
     // Create new user using admin client to bypass RLS if necessary
-    const { data: newUser, error: createError } = await supabaseAdmin
+    const { data: newUser, error: createError } = await getSupabaseAdmin()
       .from("User")
       .insert([{ name, email, password: hashedPassword }])
       .select()

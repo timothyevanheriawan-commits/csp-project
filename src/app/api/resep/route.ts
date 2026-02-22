@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabaseClient";
-import { supabaseAdmin } from "@/lib/supabaseAdmin";
+import { getSupabaseAdmin } from "@/lib/supabaseAdmin";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "../auth/[...nextauth]/route";
 
@@ -49,7 +49,7 @@ export async function POST(request: Request) {
 
     const recipeData = { ...body, authorId: user.id };
 
-    const { data: newRecipe, error: createError } = await supabaseAdmin
+    const { data: newRecipe, error: createError } = await getSupabaseAdmin()
       .from("Recipe")
       .insert([recipeData])
       .select()

@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { supabaseAdmin } from "@/lib/supabaseAdmin";
+import { getSupabaseAdmin } from "@/lib/supabaseAdmin";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "../../auth/[...nextauth]/route";
 
@@ -19,7 +19,7 @@ export async function GET() {
   }
 
   try {
-    const { data: recipes, error } = await supabaseAdmin
+    const { data: recipes, error } = await getSupabaseAdmin()
       .from("Recipe")
       .select(
         "id, title, category, createdAt, isFeatured, author:User!authorId(name, email)",
@@ -51,7 +51,7 @@ export async function PUT(req: Request) {
     if (title !== undefined) updateData.title = title;
     if (isFeatured !== undefined) updateData.isFeatured = isFeatured;
 
-    const { data, error } = await supabaseAdmin
+    const { data, error } = await getSupabaseAdmin()
       .from("Recipe")
       .update(updateData)
       .eq("id", id)
@@ -84,7 +84,10 @@ export async function DELETE(req: Request) {
 
     const ids = idsString.split(",");
 
-    const { error } = await supabaseAdmin.from("Recipe").delete().in("id", ids);
+    const { error } = await getSupabaseAdmin()
+      .from("Recipe")
+      .delete()
+      .in("id", ids);
 
     if (error) throw error;
     return NextResponse.json({ message: "Resep berhasil dihapus" });
