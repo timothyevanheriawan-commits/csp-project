@@ -34,10 +34,12 @@ export async function GET() {
     }
 
     return NextResponse.json(userRecipes);
-  } catch (error: any) {
-    console.error("FETCH_USER_RECIPES_ERROR:", error.message);
+  } catch (error) {
+    const message =
+      error instanceof Error ? error.message : "Internal Server Error";
+    console.error("FETCH_USER_RECIPES_ERROR:", message);
     return NextResponse.json(
-      { message: error.message || "Internal Server Error" },
+      { message: message || "Internal Server Error" },
       { status: 500 },
     );
   }

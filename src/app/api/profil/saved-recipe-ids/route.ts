@@ -3,6 +3,10 @@ import { getServerSession } from "next-auth/next";
 import { supabase } from "@/lib/supabaseClient";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 
+interface SavedRecipeIdRow {
+  recipeId: string;
+}
+
 export async function GET() {
   const session = await getServerSession(authOptions);
   if (!session?.user?.email) {
@@ -26,7 +30,9 @@ export async function GET() {
 
     if (error) throw error;
 
-    const savedRecipeIds = saved.map((item: any) => item.recipeId);
+    const savedRecipeIds = (saved as SavedRecipeIdRow[]).map(
+      (item) => item.recipeId,
+    );
     return NextResponse.json(savedRecipeIds);
   } catch (error) {
     console.error("FETCH_SAVED_IDS_ERROR:", error);

@@ -1,11 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth/next";
+import type { Session } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import { supabaseAdmin } from "@/lib/supabaseAdmin";
 
 type Params = Promise<{ id: string }>;
 
-async function getUserIdFromSession(session: any) {
+async function getUserIdFromSession(session: Session) {
   if (!session?.user?.email) return null;
   const { data: user } = await supabaseAdmin
     .from("User")

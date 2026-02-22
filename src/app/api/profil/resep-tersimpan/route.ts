@@ -3,6 +3,11 @@ import { getServerSession } from "next-auth/next";
 import { supabase } from "@/lib/supabaseClient";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 
+interface SavedRecipeRow {
+  recipe: unknown;
+  Recipe?: unknown;
+}
+
 export async function GET() {
   const session = await getServerSession(authOptions);
   if (!session?.user?.email) {
@@ -38,15 +43,17 @@ export async function GET() {
       throw error;
     }
 
-    const savedRecipes = data
-      .map((item: any) => item.recipe || (item as any).Recipe)
+    const savedRecipes = (data as SavedRecipeRow[])
+      .map((item) => item.recipe || item.Recipe)
       .filter(Boolean);
 
     return NextResponse.json(savedRecipes);
-  } catch (error: any) {
+  } catch (error) {
+    const message =
+      error instanceof Error ? error.message : "Internal Server Error";
     console.error("FETCH_SAVED_RECIPES_ERROR:", error);
     return NextResponse.json(
-      { message: "Internal Server Error", details: error.message },
+      { message: "Internal Server Error", details: message },
       { status: 500 },
     );
   }
